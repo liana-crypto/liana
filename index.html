@@ -2,157 +2,240 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Liana Harmonic Scanner</title>
-    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital@1&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <title>LIANA - TACTICAL HARMONIC RADAR</title>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri&family=Orbitron:wght@700&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            /* ألوان تناسب ذوق البنات (وردي ملكي، أبيض لؤلؤي، وذهبي خفيف) */
-            --soft-pink: #fdf2f8;
-            --deep-pink: #db2777;
-            --rose-gold: #e11d48;
-            --glass: rgba(255, 255, 255, 0.9);
+        :root { 
+            --green: #00ff41; 
+            --dark: #010501; 
+            --alert: #ff0033;
         }
 
-        body {
-            background: linear-gradient(135deg, #fce7f3 0%, #fae8ff 100%);
-            color: #333;
-            font-family: 'Tajawal', sans-serif;
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        body { 
+            background: var(--dark); 
+            color: var(--green); 
+            font-family: 'Tajawal', sans-serif; 
+            margin: 0; 
+            height: 100vh; 
+            overflow: hidden; 
+            display: flex; 
+            flex-direction: column; 
         }
 
-        /* واجهة التذكير بالله */
-        .dhikr-bar {
-            background: var(--deep-pink);
-            color: white;
-            width: 100%;
-            padding: 10px 0;
-            text-align: center;
-            font-family: 'Amiri', serif;
-            font-size: 1.4rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        /* شريط الذكر العلوي */
+        .nav-bar { 
+            background: #000; 
+            border-bottom: 2px solid var(--green); 
+            padding: 12px; 
+            text-align: center; 
+            font-family: 'Amiri', serif; 
+            font-size: 1.6rem; 
+            text-shadow: 0 0 15px var(--green);
+            z-index: 10;
         }
 
-        header {
-            padding: 40px 20px;
-            text-align: center;
+        .main-layout { 
+            display: grid; 
+            grid-template-columns: 360px 1fr; 
+            flex-grow: 1; 
         }
 
-        .liana-title {
-            font-size: 3rem;
-            color: var(--deep-pink);
-            margin: 0;
-            letter-spacing: 3px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.05);
+        /* الجانب الأيمن: القائمة والرادار */
+        .sidebar { 
+            background: rgba(0, 15, 0, 0.95); 
+            border-left: 2px solid var(--green); 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            overflow-y: auto; 
         }
 
-        .subtitle {
-            color: #666;
-            font-size: 1rem;
-            margin-top: 5px;
+        .radar-box { 
+            width: 170px; 
+            height: 170px; 
+            margin: 0 auto 25px; 
+            border: 2px solid var(--green); 
+            border-radius: 50%; 
+            position: relative; 
+            overflow: hidden; 
+            background: radial-gradient(circle, rgba(0,255,65,0.1) 0%, transparent 70%); 
         }
 
-        .scanner-container {
-            width: 90%;
-            max-width: 600px;
-            background: var(--glass);
-            border-radius: 25px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(219, 39, 119, 0.1);
-            border: 1px solid white;
-            backdrop-filter: blur(10px);
+        .sweep-effect { 
+            position: absolute; 
+            width: 100%; 
+            height: 100%; 
+            background: conic-gradient(from 0deg, transparent 75%, var(--green) 100%); 
+            animation: radar-rotate 2s linear infinite; 
+            opacity: 0.5; 
         }
 
-        .status-badge {
-            display: inline-block;
-            background: #dcfce7;
-            color: #166534;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            margin-bottom: 20px;
+        @keyframes radar-rotate { 
+            from { transform: rotate(0deg); } 
+            to { transform: rotate(360deg); } 
         }
 
-        .alert-card {
-            background: white;
-            border-left: 5px solid var(--deep-pink);
-            margin-bottom: 15px;
-            padding: 15px;
-            border-radius: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .symbol-name { font-weight: bold; color: #1f2937; }
-        .pattern-tag { 
-            background: #fdf2f8; 
-            color: var(--deep-pink); 
-            padding: 3px 10px; 
+        /* كروت التنبيهات */
+        .target-card { 
+            background: rgba(0, 255, 65, 0.03); 
+            border: 1px solid rgba(0, 255, 65, 0.2); 
+            padding: 15px; 
+            margin-bottom: 12px; 
+            cursor: pointer; 
             border-radius: 6px; 
-            font-size: 0.85rem; 
-            font-weight: bold;
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .target-card:hover { 
+            background: rgba(0, 255, 65, 0.1); 
+            border-color: #fff; 
+            transform: scale(1.02);
         }
+
+        .active-target { 
+            border: 2px solid white; 
+            box-shadow: 0 0 20px var(--green); 
+            background: rgba(0, 255, 65, 0.15); 
+        }
+
+        .card-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 6px; 
+        }
+
+        .pair-label { 
+            font-family: 'Orbitron'; 
+            font-size: 1.2rem; 
+            color: #fff; 
+            letter-spacing: 1px;
+        }
+
+        .timeframe-tag { 
+            background: #00d4ff; 
+            color: #000; 
+            padding: 3px 10px; 
+            border-radius: 4px; 
+            font-size: 0.8rem; 
+            font-weight: 700; 
+            font-family: 'Orbitron'; 
+        }
+
+        .pattern-desc { font-weight: bold; font-size: 0.95rem; }
+        .prz-value { color: #ffcc00; font-family: monospace; font-size: 1rem; margin-top: 4px; }
+
+        /* منطقة الشارت الأساسية */
+        .chart-view { 
+            flex-grow: 1; 
+            background: #000; 
+            position: relative; 
+        }
+
+        .status-overlay { 
+            position: absolute; 
+            top: 15px; 
+            left: 15px; 
+            z-index: 5; 
+            background: rgba(0,0,0,0.85); 
+            border: 1px solid var(--green); 
+            padding: 6px 15px; 
+            font-size: 0.75rem; 
+            font-family: 'Orbitron'; 
+            border-radius: 4px;
+        }
+
+        #tradingview_widget { height: 100%; width: 100%; }
     </style>
 </head>
 <body>
 
-<div class="dhikr-bar">
-    أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ
-</div>
+<div class="nav-bar">أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ</div>
 
-<header>
-    <h1 class="liana-title">LIANA</h1>
-    <div class="subtitle">المنصة الذكية لاكتشاف نماذج الهارمونيك</div>
-</header>
-
-<div class="scanner-container">
-    <div class="status-badge">● نظام المسح الذكي نشط الآن</div>
-    
-    <div id="alerts">
-        <div style="text-align:center; color:#999; padding:20px;">
-            جاري فحص عملات Binance بناءً على نسب الهارمونيك...
+<div class="main-layout">
+    <div class="sidebar">
+        <div class="radar-box">
+            <div class="sweep-effect"></div>
+            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:0.5rem; opacity:0.4;">V.06</div>
         </div>
+        
+        <h3 style="text-align:center; font-family:'Orbitron'; margin-bottom:15px; font-size:1rem;">ACTIVE SCANNER</h3>
+        <div id="targets-list">
+            </div>
+    </div>
+
+    <div class="chart-view">
+        <div class="status-overlay">📡 LINK ESTABLISHED: LIANA UNIT OPERATIONAL</div>
+        <div id="tradingview_widget"></div>
     </div>
 </div>
 
+<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+
 <script>
-    // النسب التي طلبتها الزبونة في الصور (Gartley, Bat, Butterfly, الخ)
-    const patternsData = [
-        { name: 'Gartley', symbol: 'BTC/USDT', prz: '0.786' },
-        { name: 'Butterfly', symbol: 'ETH/USDT', prz: '1.272' },
-        { name: 'Bat', symbol: 'BNB/USDT', prz: '0.886' }
+    // بيانات العملات والنماذج والفريمات
+    const marketSignals = [
+        { symbol: 'BINANCE:BTCUSDT', pattern: 'GARTLEY', tf: '1H', interval: '60', prz: '0.786' },
+        { symbol: 'BINANCE:ETHUSDT', pattern: 'BAT', tf: '4H', interval: '240', prz: '0.886' },
+        { symbol: 'BINANCE:SOLUSDT', pattern: 'SHARK', tf: '15m', interval: '15', prz: '1.13' },
+        { symbol: 'BINANCE:BNBUSDT', pattern: 'BUTTERFLY', tf: '1H', interval: '60', prz: '1.272' },
+        { symbol: 'BINANCE:XRPUSDT', pattern: 'CYPHER', tf: '1D', interval: 'D', prz: '0.786' }
     ];
 
-    function updateScanner() {
-        const alertsDiv = document.getElementById('alerts');
-        alertsDiv.innerHTML = ''; // تحديث القائمة
+    let currentWidget = null;
 
-        patternsData.forEach(p => {
-            alertsDiv.innerHTML += `
-                <div class="alert-card">
-                    <div>
-                        <div class="symbol-name">${p.symbol}</div>
-                        <div style="font-size:0.8rem; color:#666;">منطقة الدخول: ${p.prz}</div>
-                    </div>
-                    <span class="pattern-tag">${p.name} Detected</span>
-                </div>
-            `;
+    // وظيفة تشغيل الشارت
+    function launchChart(symbol, timeframe) {
+        currentWidget = new TradingView.widget({
+            "autosize": true,
+            "symbol": symbol,
+            "interval": timeframe,
+            "timezone": "Africa/Algiers",
+            "theme": "dark",
+            "style": "1",
+            "locale": "ar",
+            "toolbar_bg": "#f1f3f6",
+            "enable_publishing": false,
+            "hide_side_toolbar": false,
+            "allow_symbol_change": true,
+            "container_id": "tradingview_widget"
         });
     }
 
-    // تشغيل التحديث كل 5 ثوانٍ لمحاكاة المسح المباشر
-    setTimeout(updateScanner, 2000);
+    // بناء قائمة التنبيهات تفاعلياً
+    function buildScanner() {
+        const listContainer = document.getElementById('targets-list');
+        marketSignals.forEach((signal, index) => {
+            const card = document.createElement('div');
+            card.className = `target-card ${index === 0 ? 'active-target' : ''}`;
+            card.innerHTML = `
+                <div class="card-header">
+                    <span class="pair-label">${signal.symbol.split(':')[1]}</span>
+                    <span class="timeframe-tag">${signal.tf}</span>
+                </div>
+                <div class="pattern-desc">${signal.pattern} PATTERN</div>
+                <div class="prz-value">TARGET PRZ: ${signal.prz}</div>
+            `;
+            
+            card.onclick = () => {
+                // تحديث الشكل النشط
+                document.querySelectorAll('.target-card').forEach(c => c.classList.remove('active-target'));
+                card.classList.add('active-target');
+                // تحديث الشارت
+                launchChart(signal.symbol, signal.interval);
+            };
+            
+            listContainer.appendChild(card);
+        });
+        
+        // تشغيل أول عملة تلقائياً عند الفتح
+        launchChart(marketSignals[0].symbol, marketSignals[0].interval);
+    }
+
+    // تشغيل النظام عند اكتمال تحميل الصفحة
+    window.onload = buildScanner;
 </script>
 
 </body>
