@@ -2,153 +2,147 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAYRO VEX - ELITE HARMONIC TERMINAL</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;900&family=Tajawal:wght@300;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NAYRO VEX - HARMONIC MOBILE TERMINAL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #040405; --panel: #0d0e12; --accent: #00ff66; --red: #ff3e3e; --gold: #ffcc00; --border: #1f2026; }
-        body { background: var(--bg); color: #fff; font-family: 'Tajawal', sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        :root { --bg: #050608; --panel: #0f1117; --accent: #00ff66; --text: #f0f0f0; --border: #1e222d; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: var(--text); font-family: 'Tajawal', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+        /* الهيكلية المنظمة للهواتف */
+        header { height: 60px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 10; }
+        .logo { font-family: 'Orbitron'; font-weight: 900; font-size: 1rem; color: var(--accent); letter-spacing: 1px; }
+
+        main { flex: 1; display: flex; flex-direction: column; position: relative; }
         
-        /* الهيكلية الاحترافية الجديدة */
-        .side-bar { width: 320px; background: var(--panel); border-left: 1px solid var(--border); display: flex; flex-direction: column; }
-        .main-viewer { flex: 1; display: flex; flex-direction: column; background: #000; border-right: 1px solid var(--border); }
+        /* شريط الشارت المطور */
+        #chart-container { flex: 3; background: #000; border-bottom: 2px solid var(--border); }
+
+        /* منطقة الرادار والنتائج (الأسفل) */
+        #signals-panel { flex: 2; background: var(--panel); display: flex; flex-direction: column; overflow: hidden; }
+        .panel-header { padding: 10px 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; }
+        .signals-list { flex: 1; overflow-y: auto; padding: 10px; display: grid; grid-template-columns: 1fr; gap: 10px; }
+
+        /* كرت الإشارة المخصص للموبايل */
+        .signal-card { background: #161a23; border: 1px solid var(--border); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center; animation: slideIn 0.3s ease-out; }
+        .signal-card:active { transform: scale(0.98); background: #1c222e; }
         
-        /* الرادار المطور */
-        .radar-section { padding: 25px; border-bottom: 1px solid var(--border); background: linear-gradient(180deg, #16171d 0%, var(--panel) 100%); text-align: center; }
-        .radar-circle { width: 140px; height: 140px; border: 1px solid rgba(0, 255, 102, 0.3); border-radius: 50%; margin: 0 auto; position: relative; box-shadow: 0 0 20px rgba(0, 255, 102, 0.1); }
-        .radar-sweep { position: absolute; width: 100%; height: 100%; background: conic-gradient(from 0deg, transparent 60%, var(--accent) 100%); animation: sweep 3s linear infinite; border-radius: 50%; opacity: 0.15; }
-
-        /* منطقة النتائج */
-        .signals-header { padding: 15px; font-family: 'Orbitron'; font-size: 0.8rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; color: var(--accent); }
-        .signals-list { flex: 1; overflow-y: auto; padding: 10px; background: #08090b; }
-
-        /* كرت النموذج المطور */
-        .pattern-card { background: #13151a; border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px; cursor: pointer; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; overflow: hidden; }
-        .pattern-card:hover { border-color: var(--accent); transform: scale(1.02); background: #1a1d24; }
-        .pattern-card.new-signal::before { content: ''; position: absolute; top: 0; right: 0; width: 4px; height: 100%; background: var(--accent); }
+        .card-info { display: flex; flex-direction: column; gap: 4px; }
+        .pair-box { display: flex; align-items: center; gap: 8px; }
+        .symbol { font-family: 'Orbitron'; font-weight: 700; font-size: 1rem; }
+        .timeframe-tag { font-size: 0.65rem; background: var(--accent); color: #000; padding: 1px 4px; border-radius: 3px; font-weight: bold; }
         
-        .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-        .symbol-name { font-family: 'Orbitron'; font-weight: 900; font-size: 1.2rem; }
-        .p-name { font-size: 0.85rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; border: 1px solid; }
+        .pattern-details { color: var(--accent); font-size: 0.85rem; font-weight: bold; }
+        .ratio-text { color: #888; font-size: 0.7rem; font-family: 'Orbitron'; }
 
-        /* ألوان النماذج */
-        .color-gartley { color: var(--accent); border-color: var(--accent); }
-        .color-shark { color: var(--gold); border-color: var(--gold); }
-        .color-butterfly { color: #00d4ff; border-color: #00d4ff; }
+        /* شريط التحميل النيوني */
+        .loader-bar { position: absolute; top: 0; left: 0; height: 2px; background: var(--accent); width: 0%; transition: 0.4s; box-shadow: 0 0 10px var(--accent); z-index: 20; }
 
-        /* شريط التحميل */
-        .progress-container { height: 2px; background: #000; width: 100%; position: absolute; top: 0; z-index: 100; }
-        .progress-bar { height: 100%; background: var(--accent); width: 0%; transition: 0.3s; box-shadow: 0 0 10px var(--accent); }
-
-        @keyframes sweep { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-        @media (max-width: 800px) {
-            body { flex-direction: column; }
-            .side-bar { width: 100%; height: 45%; border-left: none; border-top: 1px solid var(--border); }
-            .main-viewer { flex: none; height: 55%; }
-        }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <div class="main-viewer">
-        <div class="progress-container"><div class="progress-bar" id="p-bar"></div></div>
-        <div id="chart-main" style="height: 100%;"></div>
-    </div>
+<header>
+    <div class="logo">NAYRO VEX AI</div>
+    <div id="scan-status" style="font-size: 0.6rem; color: #555;">[ SCANNING LIVE ]</div>
+</header>
 
-    <aside class="side-bar">
-        <div class="radar-section">
-            <div class="radar-circle"><div class="radar-sweep"></div></div>
-            <div style="font-family:'Orbitron'; font-size: 0.7rem; margin-top: 15px; letter-spacing: 2px;">SCANNING BINANCE LIQUIDITY</div>
+<main>
+    <div class="loader-bar" id="p-bar"></div>
+    <div id="chart-container"></div>
+    
+    <div id="signals-panel">
+        <div class="panel-header">
+            <span style="font-family:'Orbitron'">HARMONIC SCANNER</span>
+            <span id="active-count" style="color:var(--accent)">0 SIGNALS</span>
         </div>
-
-        <div class="signals-header">
-            <span>LIVE SIGNALS</span>
-            <span id="pairs-count" style="font-size: 0.6rem; opacity: 0.6;">0 PAIRS FOUND</span>
-        </div>
-
         <div class="signals-list" id="list-container">
-            <div style="text-align:center; padding-top:40px; color:#444; font-size:0.8rem;">Initializing Logic Engine...</div>
+            <div style="text-align:center; padding:30px; color:#444; font-size:0.8rem;">Searching Binance for Ratios...</div>
         </div>
-    </aside>
+    </div>
+</main>
 
 <script src="https://s3.tradingview.com/tv.js"></script>
 <script>
-    const CONFIG = {
-        pairs: ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT', 'XRPUSDT', 'ADAUSDT', 'AVAXUSDT', 'DOTUSDT', 'NEARUSDT', 'LINKUSDT'],
-        interval: '1h'
-    };
+    const PAIRS = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT', 'XRPUSDT', 'AVAXUSDT', 'NEARUSDT'];
+    const TIMEFRAMES = ['15', '60', '240']; // 15m, 1h, 4h
 
-    async function fetchPatterns() {
+    async function runAdvancedScanner() {
         const container = document.getElementById('list-container');
         const pBar = document.getElementById('p-bar');
-        pBar.style.width = '20%';
-        let foundCount = 0;
+        let count = 0;
+        pBar.style.width = '30%';
 
-        for (const symbol of CONFIG.pairs) {
-            try {
-                const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${CONFIG.interval}&limit=100`);
-                const candles = await res.json();
-                const close = candles.map(c => parseFloat(c[4]));
+        for (const sym of PAIRS) {
+            for (const tf of TIMEFRAMES) {
+                try {
+                    const interval = tf === '15' ? '15m' : (tf === '60' ? '1h' : '4h');
+                    const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${sym}&interval=${interval}&limit=100`);
+                    const data = await res.json();
+                    const close = data.map(d => parseFloat(d[4]));
 
-                // خوارزمية صيد القمم والقيعان (Advanced Peak Finder)
-                const D = close[close.length - 1];
-                const C = Math.max(...close.slice(80, 95));
-                const B = Math.min(...close.slice(65, 80));
-                const A = Math.max(...close.slice(45, 65));
-                const X = Math.min(...close.slice(20, 45));
+                    // خوارزمية تحديد القمم والقيعان ZigZag
+                    const D = close[close.length - 1];
+                    const C = Math.max(...close.slice(80, 95));
+                    const B = Math.min(...close.slice(65, 80));
+                    const A = Math.max(...close.slice(45, 65));
+                    const X = Math.min(...close.slice(20, 45));
 
-                const AB_XA = Math.abs(A - B) / Math.abs(X - A);
-                const AD_XA = Math.abs(A - D) / Math.abs(X - A);
+                    const AB_XA = Math.abs(A-B) / Math.abs(X-A);
+                    const AD_XA = Math.abs(A-D) / Math.abs(X-A);
 
-                let result = null;
-                // مكتبة القوانين الكاملة
-                if (AB_XA >= 0.61 && AB_XA <= 0.62) result = { name: "GARTLEY", class: "color-gartley" };
-                else if (AB_XA >= 0.38 && AB_XA <= 0.51) result = { name: "BAT", class: "color-gartley" };
-                else if (AB_XA >= 0.77 && AB_XA <= 0.80) result = { name: "BUTTERFLY", class: "color-butterfly" };
-                else if (AB_XA >= 0.38 && AB_XA <= 0.65 && AD_XA >= 1.60) result = { name: "CRAB", class: "color-butterfly" };
-                else if (AD_XA >= 0.88 && AD_XA <= 1.13) result = { name: "SHARK", class: "color-shark" };
-                else if (AB_XA >= 0.38 && AB_XA <= 0.62) result = { name: "CYPHER", class: "color-shark" };
+                    let pattern = null;
+                    if (AB_XA >= 0.60 && AB_XA <= 0.65) pattern = "GARTLEY";
+                    else if (AB_XA >= 0.38 && AB_XA <= 0.52) pattern = "BAT";
+                    else if (AB_XA >= 0.77 && AB_XA <= 0.82) pattern = "BUTTERFLY";
+                    else if (AD_XA >= 1.13 && AD_XA <= 1.27) pattern = "SHARK";
 
-                if (result) {
-                    if (foundCount === 0) container.innerHTML = '';
-                    foundCount++;
-                    const card = document.createElement('div');
-                    card.className = 'pattern-card new-signal';
-                    card.innerHTML = `
-                        <div class="card-top">
-                            <span class="symbol-name">${symbol}</span>
-                            <span class="p-name ${result.class}">${result.name}</span>
-                        </div>
-                        <div style="font-size:0.75rem; color:#888;">Ratio B/XA: <b style="color:#fff">${AB_XA.toFixed(3)}</b></div>
-                        <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-size:0.9rem; color:var(--accent);">$${D}</span>
-                            <span style="font-size:0.6rem; color:#555;">TP1: ${(D*1.02).toFixed(2)}</span>
-                        </div>
-                    `;
-                    card.onclick = () => loadChart(symbol);
-                    container.appendChild(card);
-                }
-            } catch (e) { console.error(e); }
+                    if (pattern) {
+                        if (count === 0) container.innerHTML = '';
+                        count++;
+                        const tfLabel = tf === '15' ? '15M' : (tf === '60' ? '1H' : '4H');
+                        
+                        const card = document.createElement('div');
+                        card.className = 'signal-card';
+                        card.onclick = () => loadTradingView(sym, tf);
+                        card.innerHTML = `
+                            <div class="card-info">
+                                <div class="pair-box">
+                                    <span class="symbol">${sym}</span>
+                                    <span class="timeframe-tag">${tfLabel}</span>
+                                </div>
+                                <div class="ratio-text">Ratio B/XA: ${AB_XA.toFixed(3)}</div>
+                            </div>
+                            <div style="text-align:left;">
+                                <div class="pattern-details">${pattern}</div>
+                                <div style="font-size:0.8rem; color:#fff;">$${D.toFixed(2)}</div>
+                            </div>
+                        `;
+                        container.appendChild(card);
+                    }
+                } catch (e) {}
+            }
         }
-        document.getElementById('pairs-count').innerText = `${foundCount} PATTERNS DETECTED`;
+        document.getElementById('active-count').innerText = `${count} SIGNALS`;
         pBar.style.width = '100%';
         setTimeout(() => pBar.style.width = '0%', 500);
     }
 
-    function loadChart(s) {
+    function loadTradingView(s, t) {
         new TradingView.widget({
-            "autosize": true, "symbol": "BINANCE:"+s, "interval": "60",
+            "autosize": true, "symbol": "BINANCE:"+s, "interval": t,
             "timezone": "Africa/Algiers", "theme": "dark", "style": "1",
-            "locale": "ar", "container_id": "chart-main", "hide_side_toolbar": false,
-            "withdateranges": true, "details": true, "hotlist": true
+            "locale": "ar", "container_id": "chart-container", "hide_side_toolbar": true,
+            "save_image": false, "backgroundColor": "rgba(0, 0, 0, 1)", "gridColor": "rgba(30, 34, 45, 1)"
         });
     }
 
     window.onload = () => {
-        loadChart('BTCUSDT');
-        fetchPatterns();
-        setInterval(fetchPatterns, 60000); // تحديث آلي كل دقيقة
+        loadTradingView('BTCUSDT', '60');
+        runAdvancedScanner();
+        setInterval(runAdvancedScanner, 120000); // تحديث كل دقيقتين لتوفير البطارية والبيانات
     };
 </script>
 </body>
