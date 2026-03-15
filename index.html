@@ -3,61 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LIANA | TACTICAL ENGINE</title>
+    <title>LIANA ELITE V12</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Tajawal:wght@700&display=swap" rel="stylesheet">
     <style>
-        :root { --army: #4b5320; --neon: #00ff41; --bg: #050505; --dark-card: #0a0a0a; }
+        :root { --army: #4b5320; --neon: #00ff41; --bg: #050505; --dark: #0a0a0a; }
         body { background: var(--bg); color: var(--neon); margin: 0; font-family: 'Tajawal', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
-        /* شريط الحالة العلوي المتطور */
-        .status-bar { height: 40px; background: #000; display: flex; align-items: center; padding: 0 15px; justify-content: space-between; border-bottom: 1px solid var(--army); font-size: 0.7rem; }
-        .scanning-text { color: var(--neon); font-family: 'Orbitron'; animation: blink 1.5s infinite; }
-        @keyframes blink { 50% { opacity: 0.3; } }
+        /* Header & Status */
+        .status-header { height: 40px; background: #000; display: flex; align-items: center; padding: 0 15px; justify-content: space-between; border-bottom: 2px solid var(--army); font-size: 0.7rem; }
+        .logo { font-family: 'Orbitron'; font-weight: 900; color: var(--neon); font-size: 1.4rem; text-shadow: 0 0 10px var(--neon); }
+        .scanning-loader { display: flex; align-items: center; gap: 8px; color: var(--army); font-family: 'Orbitron'; }
+        .dot { width: 6px; height: 6px; background: var(--neon); border-radius: 50%; animation: pulse 1s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.3; transform: scale(1.5); } }
 
-        .header-main { height: 50px; background: var(--dark-card); display: flex; align-items: center; padding: 0 15px; justify-content: space-between; }
-        .logo { font-family: 'Orbitron'; font-weight: 900; color: var(--neon); font-size: 1.3rem; text-shadow: 0 0 10px var(--neon); }
-
-        /* أزرار النماذج الستة - تصميم عسكري محسن */
-        .pattern-grid { background: #000; padding: 10px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; border-bottom: 2px solid var(--army); }
+        /* Patterns Control */
+        .pattern-grid { background: var(--dark); padding: 10px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; border-bottom: 1px solid var(--army); }
         .p-btn { 
             background: #0d0d0d; border: 1px solid var(--army); color: var(--army); 
-            padding: 10px; border-radius: 4px; cursor: pointer; font-family: 'Orbitron'; 
-            font-size: 0.7rem; text-align: center; transition: all 0.3s;
+            padding: 12px; border-radius: 4px; cursor: pointer; font-family: 'Orbitron'; 
+            font-size: 0.7rem; transition: 0.3s; font-weight: bold;
         }
-        .p-btn.active { 
-            background: var(--army); color: #000; font-weight: bold; 
-            box-shadow: 0 0 20px rgba(0, 255, 65, 0.4); border-color: var(--neon);
-        }
+        .p-btn.active { background: var(--army); color: #000; box-shadow: 0 0 15px var(--neon); border-color: var(--neon); }
 
-        #tv_container { flex: 1; width: 100%; position: relative; }
+        /* Main Viewports */
+        #tv_container { flex: 1; width: 100%; border-bottom: 2px solid var(--army); }
+        #radar { height: 35vh; background: #010101; overflow-y: auto; padding: 12px; }
 
-        /* منطقة الرادار السفلي */
-        .radar-header { background: #000; padding: 5px 15px; font-size: 0.8rem; border-top: 2px solid var(--army); display: flex; justify-content: space-between; font-family: 'Orbitron'; }
-        #radar-display { height: 30vh; background: #020202; overflow-y: auto; padding: 10px; }
-        
-        .signal-item { 
-            background: rgba(75, 83, 32, 0.15); border: 1px solid var(--army); 
-            padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; 
-            align-items: center; border-right: 5px solid var(--neon); cursor: pointer;
-            transition: 0.2s;
+        /* Radar Items */
+        .sig-card { 
+            background: rgba(75, 83, 32, 0.1); border: 1px solid var(--army); 
+            padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; 
+            align-items: center; border-right: 4px solid var(--neon); cursor: pointer;
+            animation: slideIn 0.4s ease-out;
         }
-        .signal-item:hover { background: rgba(75, 83, 32, 0.3); transform: scale(0.98); }
-        .coin-info { display: flex; flex-direction: column; }
-        .coin-name { font-family: 'Orbitron'; font-weight: 900; font-size: 1rem; color: #fff; }
-        .pattern-type { color: var(--neon); font-size: 0.7rem; font-weight: bold; margin-top: 3px; }
-        .price-info { font-family: 'Orbitron'; text-align: left; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
+        .coin-info b { font-family: 'Orbitron'; font-size: 1.1rem; color: #fff; letter-spacing: 1px; }
+        .tag { font-size: 0.75rem; color: var(--neon); font-weight: bold; display: block; margin-top: 5px; text-transform: uppercase; }
+        .price-box { font-family: 'Orbitron'; text-align: left; }
     </style>
 </head>
 <body>
 
-<div class="status-bar">
-    <div class="scanning-text">● LIANA ENGINE V5.0 - SCANNING MARKET</div>
-    <div style="color: var(--army);">LATENCY: 12ms</div>
-</div>
-
-<div class="header-main">
+<div class="status-header">
     <div class="logo">LIANA</div>
-    <div id="active-count" style="font-size: 0.7rem; border: 1px solid var(--neon); padding: 2px 8px; border-radius: 10px;">MATCHES: 0</div>
+    <div class="scanning-loader">
+        <span class="dot"></span>
+        <span id="engine-status">ENGINE STANDBY</span>
+    </div>
 </div>
 
 <div class="pattern-grid">
@@ -70,14 +62,7 @@
 </div>
 
 <div id="tv_container"></div>
-
-<div class="radar-header">
-    <span>RADAR SIGNALS</span>
-    <span id="scan-status">WAITING...</span>
-</div>
-<div id="radar-display">
-    <div id="signals-box"></div>
-</div>
+<div id="radar"><div id="signals-box"></div></div>
 
 <script src="https://s3.tradingview.com/tv.js"></script>
 <script>
@@ -87,25 +72,24 @@ const Logic = {
         if (pts.length < 5) return null;
         const [X, A, B, C, D] = pts.map(p => p.v);
         const xa = Math.abs(A-X), ab = Math.abs(B-A)/xa, bc = Math.abs(C-B)/Math.abs(B-A), ad = Math.abs(D-A)/xa;
-        const tol = 0.02; // دقة 10000%
+        const t = 0.09; // مرونة احترافية 9% 
 
-        if (this.near(ab, 0.618, tol) && this.near(ad, 0.786, tol)) return "GARTLEY";
-        if (ab < 0.50 + tol && this.near(ad, 0.886, tol)) return "BAT";
-        if (this.near(ab, 0.786, tol) && this.near(ad, 1.27, tol)) return "BUTTERFLY";
-        if (ab <= 0.886 && this.near(ad, 1.618, tol)) return "CRAB";
-        if (bc >= 1.27 && bc <= 1.41 && this.near(ad, 0.786, tol)) return "CYPHER";
-        if (ad >= 0.886 - tol && ad <= 1.13 + tol) return "SHARK";
+        if (this.near(ab, 0.618, t) && this.near(ad, 0.786, t)) return "GARTLEY";
+        if (this.near(ab, 0.447, 0.15) && this.near(ad, 0.886, t)) return "BAT";
+        if (this.near(ab, 0.786, t) && this.near(ad, 1.27, t)) return "BUTTERFLY";
+        if (this.near(ab, 0.886, 0.15) && this.near(ad, 1.618, t)) return "CRAB";
+        if (bc >= 1.27 && this.near(ad, 0.786, 0.12)) return "CYPHER";
+        if (ad >= 0.886 && ad <= 1.13) return "SHARK";
         return null;
     },
-    near(v, t, e) { return v >= t - e && v <= t + e; }
+    near(v, target, err) { return v >= target - err && v <= target + err; }
 };
 
 const Engine = {
     isScanning: false,
-    foundCount: 0,
     async toggle(pat) {
         const btn = document.getElementById(`btn-${pat}`);
-        if (Logic.selectedPatterns.has(pat)) {
+        if (this.selectedPatterns?.has(pat)) {
             Logic.selectedPatterns.delete(pat);
             btn.classList.remove('active');
         } else {
@@ -114,25 +98,21 @@ const Engine = {
             if (!this.isScanning) { this.isScanning = true; this.run(); }
         }
         document.getElementById('signals-box').innerHTML = '';
-        this.foundCount = 0;
-        this.updateCount();
     },
-    updateCount() { document.getElementById('active-count').innerText = `MATCHES: ${this.foundCount}`; },
     async run() {
         while (this.isScanning) {
             if (Logic.selectedPatterns.size === 0) { this.isScanning = false; break; }
-            document.getElementById('scan-status').innerText = "SCANNING...";
+            document.getElementById('engine-status').innerText = "RADAR ACTIVE";
             try {
                 const r = await fetch('https://api.binance.com/api/v3/exchangeInfo').then(res => res.json());
-                const pairs = r.symbols.filter(s => s.quoteAsset === 'USDT' && s.status === 'TRADING').map(s => s.symbol);
-                for (let s of pairs) {
-                    if (Logic.selectedPatterns.size === 0) break;
-                    await this.analyze(s);
-                    await new Promise(res => setTimeout(res, 100));
+                const pairs = r.symbols.filter(s => s.quoteAsset === 'USDT' && s.status === 'TRADING').map(s => s.symbol).slice(0, 300);
+                for (let i = 0; i < pairs.length; i += 5) {
+                    const batch = pairs.slice(i, i+5);
+                    await Promise.all(batch.map(s => this.analyze(s)));
+                    await new Promise(res => setTimeout(res, 150));
                 }
             } catch (e) {}
-            document.getElementById('scan-status').innerText = "CYCLE COMPLETE";
-            await new Promise(res => setTimeout(res, 30000));
+            await new Promise(res => setTimeout(res, 8000));
         }
     },
     async analyze(s) {
@@ -140,25 +120,16 @@ const Engine = {
             try {
                 const k = await fetch(`https://api.binance.com/api/v3/klines?symbol=${s}&interval=${tf}&limit=80`).then(res => res.json());
                 const closes = k.map(c => parseFloat(c[4]));
-                const pts = this.getZ(closes);
-                const res = Logic.check(pts);
-                if (res && Logic.selectedPatterns.has(res)) {
-                    UI.add(s, res, tf, closes[closes.length-1]);
-                    this.foundCount++;
-                    this.updateCount();
-                }
+                const pts = this.getZigZag(closes);
+                const result = Logic.check(pts);
+                if (result && Logic.selectedPatterns.has(result)) UI.add(s, result, tf, closes[closes.length-1]);
             } catch (e) {}
         }
     },
-    getZ(d) {
+    getZigZag(d) {
         let pts = [];
-        for (let i = 5; i < d.length - 5; i++) {
-            let isMax = true, isMin = true;
-            for (let j = 1; j <= 5; j++) {
-                if (d[i] <= d[i-j] || d[i] <= d[i+j]) isMax = false;
-                if (d[i] >= d[i-j] || d[i] >= d[i+j]) isMin = false;
-            }
-            if (isMax || isMin) pts.push({v: d[i]});
+        for (let i = 2; i < d.length-2; i++) {
+            if ((d[i] > d[i-1] && d[i] > d[i+1]) || (d[i] < d[i-1] && d[i] < d[i+1])) pts.push({v: d[i]});
         }
         return pts.slice(-5);
     }
@@ -170,23 +141,24 @@ const UI = {
         const id = `${sym}-${pat}-${tf}`;
         if (document.getElementById(id)) return;
         const el = document.createElement('div');
-        el.id = id; el.className = 'signal-item';
+        el.id = id; el.className = 'sig-card';
         el.innerHTML = `
             <div class="coin-info">
-                <span class="coin-name">${sym} <small style="font-size:0.6rem; color:var(--army)">[${tf}]</small></span>
-                <span class="pattern-type">${pat} DETECTED</span>
+                <b>${sym}</b> <small style="color:var(--army)">[${tf}]</small>
+                <span class="tag">${pat} LOCKED</span>
             </div>
-            <div class="price-info">
-                <div style="color:#fff;">$${pr.toFixed(pr < 1 ? 4 : 2)}</div>
-                <div style="font-size:0.5rem; color:var(--army);">CONFIRMED</div>
+            <div class="price-box">
+                <div style="font-weight:bold; color:#fff;">$${pr.toFixed(pr < 1 ? 4 : 2)}</div>
+                <div style="font-size:0.6rem; color:var(--army); text-align:right;">DETECTED</div>
             </div>`;
         el.onclick = () => this.loadChart(sym, tf);
         box.prepend(el);
     },
     loadChart(s, t) {
+        const intervalMap = { '15m': '15', '1h': '60', '4h': '240' };
         new TradingView.widget({
-            "autosize": true, "symbol": "BINANCE:"+s, "interval": t==='15m'?'15':(t==='1h'?'60':'240'),
-            "theme": "dark", "container_id": "tv_container", "locale": "ar", "gridColor": "rgba(75, 83, 32, 0.05)"
+            "autosize": true, "symbol": "BINANCE:"+s, "interval": intervalMap[t],
+            "theme": "dark", "container_id": "tv_container", "locale": "ar", "style": "1"
         });
     }
 };
