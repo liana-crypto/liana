@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LIANA - MULTI-TIMEFRAME RADAR v4.0</title>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri&family=Orbitron:wght@400;700&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --radar-green: #00ff41;
+            --radar-dark: #010301;
+            --alert-red: #ff0033;
+            --neon-blue: #00d4ff;
+            --radar-glow: rgba(0, 255, 65, 0.15);
+        }
+
+        body {
+            background-color: var(--radar-dark);
+            color: var(--radar-green);
+            font-family: 'Tajawal', sans-serif;
+            margin: 0; padding: 0;
+            height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+        }
+
+        .dhikr-bar {
+            background: #000; border-bottom: 2px solid var(--radar-green);
+            padding: 8px; text-align: center; font-family: 'Amiri', serif;
+            font-size: 1.3rem; text-shadow: 0 0 15px var(--radar-green);
+        }
+
+        .main-layout { display: grid; grid-template-columns: 380px 1fr; flex-grow: 1; }
+
+        /*Sidebar*/
+        .sidebar { background: rgba(0, 5, 0, 0.95); border-left: 2px solid var(--radar-green); display: flex; flex-direction: column; padding: 15px; overflow-y: auto; }
+
+        .radar-box {
+            width: 180px; height: 180px; margin: 0 auto 15px; position: relative;
+            border: 2px solid var(--radar-green); border-radius: 50%;
+            background: repeating-radial-gradient(circle, transparent 0, transparent 20px, rgba(0, 255, 65, 0.05) 21px);
+        }
+        .sweep {
+            position: absolute; width: 100%; height: 100%;
+            background: conic-gradient(from 0deg, transparent 70%, var(--radar-glow) 100%);
+            animation: sweep-anim 2s linear infinite;
+        }
+
+        /* كروت التنبيه المطورة */
+        .signal-card {
+            background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(0, 255, 65, 0.3);
+            padding: 12px; margin-bottom: 10px; cursor: pointer; border-radius: 5px;
+            transition: all 0.3s ease; position: relative;
+        }
+        .signal-card:hover { border-color: var(--radar-green); background: rgba(0, 255, 65, 0.05); }
+        .active-target { border: 2px solid #fff; box-shadow: 0 0 15px var(--radar-green); background: rgba(0, 255, 65, 0.1); }
+        
+        .card-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .pair-name { font-family: 'Orbitron'; font-weight: bold; font-size: 1.1rem; color: #fff; }
+        .timeframe-tag { 
+            background: var(--neon-blue); color: #000; padding: 2px 6px; 
+            border-radius: 3px; font-weight: bold; font-size: 0.75rem; font-family: 'Orbitron';
+        }
+        .pattern-info { color: var(--radar-green); font-weight: bold; font-size: 0.9rem; }
+        .entry-prz { color: #ffcc00; font-family: monospace; font-size: 1rem; }
+
+        /* شاشة الشارت */
+        .chart-container { position: relative; background: #000; }
+        .system-logs {
+            position: absolute; bottom: 10px; right: 10px; z-index: 5;
+            background: rgba(0,0,0,0.8); padding: 5px 10px; border: 1px solid var(--radar-green);
+            font-family: monospace; font-size: 0.7rem; pointer-events: none;
+        }
+
+        @keyframes sweep-anim { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .flash { animation: alert-flash 0.8s infinite alternate; }
+        @keyframes alert-flash { from { border-color: var(--radar-green); } to { border-color: var(--alert-red); } }
+    </style>
+</head>
+<body>
+
+<div class="dhikr-bar">أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ</div>
+
+<div class="main-layout">
+    <div class="sidebar">
+        <div class="radar-box"><div class="sweep"></div></div>
+        <h4 style="text-align:center; font-family:'Orbitron'; margin:5px 0;">HARMONIC SCANNER</h4>
+        
+        <div id="signals-list">
+            </div>
+    </div>
+
+    <div class="chart-container">
+        <div id="tv_main_chart" style="height: 100%; width: 100%;"></div>
+        <div class="system-logs" id="logs">LOG: System Ready...</div>
+    </div>
+</div>
+
+<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+<script>
+    // البيانات الآن تشمل الفريم (15, 60=1h, 240=4h, D)
+    const signals = [
+        { pair: 'BINANCE:BTCUSDT', pattern: 'GARTLEY', prz: '0.786', tf: '1H', tf_val: '60', status: 'live' },
+        { pair: 'BINANCE:ETHUSDT', pattern: 'BAT', prz: '0.886', tf: '4H', tf_val: '240', status: 'live' },
+        { pair: 'BINANCE:SOLUSDT', pattern: 'SHARK', prz: '1.13', tf: '15m', tf_val: '15', status: 'critical' },
+        { pair: 'BINANCE:BNBUSDT', pattern: 'BUTTERFLY', prz: '1.272', tf: '1H', tf_val: '60', status: 'live' },
+        { pair: 'BINANCE:XRPUSDT', pattern: 'CRAB', prz: '1.618', tf: '1D', tf_val: 'D', status: 'live' }
+    ];
+
+    function loadChart(symbol, timeframe) {
+        new TradingView.widget({
+            "autosize": true,
+            "symbol": symbol,
+            "interval": timeframe,
+            "timezone": "Africa/Algiers",
+            "theme": "dark",
+            "style": "1",
+            "locale": "ar",
+            "enable_publishing": false,
+            "container_id": "tv_main_chart"
+        });
+        document.getElementById('logs').innerText = `LOG: Switched to ${symbol} on ${timeframe} timeframe`;
+    }
+
+    function initScanner() {
+        const list = document.getElementById('signals-list');
+        signals.forEach((s, i) => {
+            const card = document.createElement('div');
+            card.className = `signal-card ${i === 0 ? 'active-target' : ''} ${s.status === 'critical' ? 'flash' : ''}`;
+            card.innerHTML = `
+                <div class="card-row">
+                    <span class="pair-name">${s.pair.split(':')[1]}</span>
+                    <span class="timeframe-tag">${s.tf}</span>
+                </div>
+                <div class="card-row">
+                    <span class="pattern-info">${s.pattern}</span>
+                    <span class="entry-prz">PRZ: ${s.prz}</span>
+                </div>
+            `;
+            card.onclick = () => {
+                document.querySelectorAll('.signal-card').forEach(c => c.classList.remove('active-target'));
+                card.classList.add('active-target');
+                loadChart(s.pair, s.tf_val);
+            };
+            list.appendChild(card);
+        });
+        loadChart(signals[0].pair, signals[0].tf_val);
+    }
+
+    window.onload = initScanner;
+</script>
+
+</body>
+</html>
