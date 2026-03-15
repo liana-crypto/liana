@@ -3,150 +3,141 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LIANA - MULTI-TIMEFRAME RADAR v4.0</title>
-    <link href="https://fonts.googleapis.com/css2?family=Amiri&family=Orbitron:wght@400;700&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <title>NAYRO VEX | ULTIMATE PRECISION</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Tajawal:wght@700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --radar-green: #00ff41;
-            --radar-dark: #010301;
-            --alert-red: #ff0033;
-            --neon-blue: #00d4ff;
-            --radar-glow: rgba(0, 255, 65, 0.15);
-        }
-
-        body {
-            background-color: var(--radar-dark);
-            color: var(--radar-green);
-            font-family: 'Tajawal', sans-serif;
-            margin: 0; padding: 0;
-            height: 100vh; display: flex; flex-direction: column; overflow: hidden;
-        }
-
-        .dhikr-bar {
-            background: #000; border-bottom: 2px solid var(--radar-green);
-            padding: 8px; text-align: center; font-family: 'Amiri', serif;
-            font-size: 1.3rem; text-shadow: 0 0 15px var(--radar-green);
-        }
-
-        .main-layout { display: grid; grid-template-columns: 380px 1fr; flex-grow: 1; }
-
-        /*Sidebar*/
-        .sidebar { background: rgba(0, 5, 0, 0.95); border-left: 2px solid var(--radar-green); display: flex; flex-direction: column; padding: 15px; overflow-y: auto; }
-
-        .radar-box {
-            width: 180px; height: 180px; margin: 0 auto 15px; position: relative;
-            border: 2px solid var(--radar-green); border-radius: 50%;
-            background: repeating-radial-gradient(circle, transparent 0, transparent 20px, rgba(0, 255, 65, 0.05) 21px);
-        }
-        .sweep {
-            position: absolute; width: 100%; height: 100%;
-            background: conic-gradient(from 0deg, transparent 70%, var(--radar-glow) 100%);
-            animation: sweep-anim 2s linear infinite;
-        }
-
-        /* كروت التنبيه المطورة */
-        .signal-card {
-            background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(0, 255, 65, 0.3);
-            padding: 12px; margin-bottom: 10px; cursor: pointer; border-radius: 5px;
-            transition: all 0.3s ease; position: relative;
-        }
-        .signal-card:hover { border-color: var(--radar-green); background: rgba(0, 255, 65, 0.05); }
-        .active-target { border: 2px solid #fff; box-shadow: 0 0 15px var(--radar-green); background: rgba(0, 255, 65, 0.1); }
-        
-        .card-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-        .pair-name { font-family: 'Orbitron'; font-weight: bold; font-size: 1.1rem; color: #fff; }
-        .timeframe-tag { 
-            background: var(--neon-blue); color: #000; padding: 2px 6px; 
-            border-radius: 3px; font-weight: bold; font-size: 0.75rem; font-family: 'Orbitron';
-        }
-        .pattern-info { color: var(--radar-green); font-weight: bold; font-size: 0.9rem; }
-        .entry-prz { color: #ffcc00; font-family: monospace; font-size: 1rem; }
-
-        /* شاشة الشارت */
-        .chart-container { position: relative; background: #000; }
-        .system-logs {
-            position: absolute; bottom: 10px; right: 10px; z-index: 5;
-            background: rgba(0,0,0,0.8); padding: 5px 10px; border: 1px solid var(--radar-green);
-            font-family: monospace; font-size: 0.7rem; pointer-events: none;
-        }
-
-        @keyframes sweep-anim { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .flash { animation: alert-flash 0.8s infinite alternate; }
-        @keyframes alert-flash { from { border-color: var(--radar-green); } to { border-color: var(--alert-red); } }
+        :root { --neon: #008cff; --bg: #010409; --card: #0d1117; --border: #30363d; }
+        body { background: var(--bg); color: #fff; margin: 0; font-family: 'Tajawal', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        .header { height: 60px; background: var(--card); display: flex; align-items: center; padding: 0 20px; justify-content: space-between; border-bottom: 2px solid var(--neon); }
+        .logo { font-family: 'Orbitron'; font-weight: 900; color: var(--neon); font-size: 1.4rem; }
+        .search-box { display: flex; background: #000; border: 1px solid var(--border); border-radius: 5px; padding: 5px; width: 300px; }
+        .search-box input { background: none; border: none; color: #fff; outline: none; width: 100%; padding-left: 10px; font-family: 'Orbitron'; }
+        .search-box button { background: var(--neon); border: none; color: #fff; padding: 5px 15px; cursor: pointer; border-radius: 3px; font-weight: bold; }
+        #chart-area { flex: 1; position: relative; }
+        #radar { height: 35vh; background: var(--card); border-top: 1px solid var(--border); overflow-y: auto; padding: 15px; }
+        .sig-card { background: #161b22; border: 1px solid var(--border); border-radius: 8px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-right: 4px solid var(--neon); cursor: pointer; }
+        .pat-tag { color: var(--neon); font-family: 'Orbitron'; font-size: 0.8rem; letter-spacing: 1px; }
+        .tf-chip { background: var(--neon); color: #000; font-size: 10px; padding: 2px 6px; border-radius: 3px; font-weight: 900; margin-left: 10px; }
     </style>
 </head>
 <body>
 
-<div class="dhikr-bar">أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ</div>
-
-<div class="main-layout">
-    <div class="sidebar">
-        <div class="radar-box"><div class="sweep"></div></div>
-        <h4 style="text-align:center; font-family:'Orbitron'; margin:5px 0;">HARMONIC SCANNER</h4>
-        
-        <div id="signals-list">
-            </div>
-    </div>
-
-    <div class="chart-container">
-        <div id="tv_main_chart" style="height: 100%; width: 100%;"></div>
-        <div class="system-logs" id="logs">LOG: System Ready...</div>
+<div class="header">
+    <div class="logo">NAYRO VEX PRO</div>
+    <div class="search-box">
+        <input type="text" id="symIn" placeholder="BTCUSDT...">
+        <button onclick="updateChart()">SEARCH</button>
     </div>
 </div>
 
-<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+<div id="chart-area"><div id="tv_container" style="height: 100%;"></div></div>
+
+<div id="radar">
+    <div style="color: var(--neon); font-family: 'Orbitron'; font-size: 0.7rem; margin-bottom: 10px;">VALIDATED HARMONIC SIGNALS (6 PATTERNS)</div>
+    <div id="list"></div>
+</div>
+
+<script src="https://s3.tradingview.com/tv.js"></script>
 <script>
-    // البيانات الآن تشمل الفريم (15, 60=1h, 240=4h, D)
-    const signals = [
-        { pair: 'BINANCE:BTCUSDT', pattern: 'GARTLEY', prz: '0.786', tf: '1H', tf_val: '60', status: 'live' },
-        { pair: 'BINANCE:ETHUSDT', pattern: 'BAT', prz: '0.886', tf: '4H', tf_val: '240', status: 'live' },
-        { pair: 'BINANCE:SOLUSDT', pattern: 'SHARK', prz: '1.13', tf: '15m', tf_val: '15', status: 'critical' },
-        { pair: 'BINANCE:BNBUSDT', pattern: 'BUTTERFLY', prz: '1.272', tf: '1H', tf_val: '60', status: 'live' },
-        { pair: 'BINANCE:XRPUSDT', pattern: 'CRAB', prz: '1.618', tf: '1D', tf_val: 'D', status: 'live' }
-    ];
+const Validator = {
+    check(pts) {
+        if (pts.length < 5) return null;
+        const [X, A, B, C, D] = pts.map(p => p.v);
+        if (X === A || B === C) return null; // حماية من النقاط المكررة
 
-    function loadChart(symbol, timeframe) {
+        const xa = Math.abs(A - X);
+        const ab = Math.abs(B - A) / xa;
+        const bc = Math.abs(C - B) / Math.abs(B - A);
+        const ad = Math.abs(D - A) / xa;
+
+        // دقة النماذج الستة (Tolerance 3%)
+        if (this.near(ab, 0.618) && this.near(ad, 0.786)) return "GARTLEY";
+        if (this.near(ab, 0.382, 0.5) && this.near(ad, 0.886)) return "BAT";
+        if (this.near(ab, 0.786) && this.near(ad, 1.27, 1.618)) return "BUTTERFLY";
+        if (this.near(ab, 0.382, 0.886) && this.near(ad, 1.618)) return "CRAB";
+        if (this.near(bc, 1.27, 1.41) && ad <= 0.786) return "CYPHER";
+        if (ad >= 0.886 && ad <= 1.13) return "SHARK";
+
+        return null;
+    },
+    near(val, target, max = null) {
+        const tol = 0.03;
+        if (max) return val >= target - tol && val <= max + tol;
+        return val >= target - tol && val <= target + tol;
+    }
+};
+
+const Core = {
+    async scanAll() {
+        try {
+            const pairs = await fetch('https://api.binance.com/api/v3/exchangeInfo').then(r => r.json());
+            const usdtPairs = pairs.symbols.filter(s => s.quoteAsset === 'USDT' && s.status === 'TRADING').map(s => s.symbol);
+            for (let i = 0; i < usdtPairs.length; i += 15) {
+                const batch = usdtPairs.slice(i, i+15);
+                await Promise.all(batch.map(s => this.analyze(s)));
+                await new Promise(r => setTimeout(r, 600));
+            }
+        } catch(e) {}
+    },
+
+    async analyze(sym) {
+        for (let tf of ['15m', '1h', '4h']) {
+            try {
+                const k = await fetch(`https://api.binance.com/api/v3/klines?symbol=${sym}&interval=${tf}&limit=100`).then(r => r.json());
+                const closes = k.map(c => parseFloat(c[4]));
+                const points = this.getZ(closes);
+                const pattern = Validator.check(points);
+                if (pattern) UI.render(sym, pattern, tf, closes[closes.length-1]);
+            } catch(e) {}
+        }
+    },
+
+    getZ(d) {
+        let pts = [];
+        // محرك البحث عن القمم والقيعان الحقيقية (Significant Swings)
+        for (let i = 5; i < d.length - 5; i++) {
+            let isMax = true, isMin = true;
+            for (let j = 1; j <= 5; j++) {
+                if (d[i] <= d[i-j] || d[i] <= d[i+j]) isMax = false;
+                if (d[i] >= d[i-j] || d[i] >= d[i+j]) isMin = false;
+            }
+            if (isMax || isMin) pts.push({v: d[i]});
+        }
+        return pts.slice(-5);
+    }
+};
+
+const UI = {
+    render(sym, pat, tf, pr) {
+        const list = document.getElementById('list');
+        const id = `${sym}-${pat}-${tf}`;
+        if (document.getElementById(id)) return;
+        const el = document.createElement('div');
+        el.id = id; el.className = 'sig-card';
+        el.innerHTML = `<div><span class="tf-chip">${tf.toUpperCase()}</span><span style="font-family:'Orbitron'; margin-right:10px;">${sym}</span><div class="pat-tag">${pat}</div></div>
+                        <div style="text-align:left;"><div style="font-family:'Orbitron';">$${pr.toFixed(pr < 1 ? 4 : 2)}</div><div style="font-size:9px; color:#555;">RATIO VERIFIED</div></div>`;
+        el.onclick = () => this.loadChart(sym, tf);
+        list.prepend(el);
+    },
+    loadChart(s, t) {
+        const m = {'15m':'15','1h':'60','4h':'240'};
         new TradingView.widget({
-            "autosize": true,
-            "symbol": symbol,
-            "interval": timeframe,
-            "timezone": "Africa/Algiers",
-            "theme": "dark",
-            "style": "1",
-            "locale": "ar",
-            "enable_publishing": false,
-            "container_id": "tv_main_chart"
+            "autosize": true, "symbol": "BINANCE:"+s, "interval": m[t]||"60",
+            "theme": "dark", "container_id": "tv_container", "locale": "ar",
+            "studies": ["RSI@tv-basicstudies", "Volume@tv-basicstudies"]
         });
-        document.getElementById('logs').innerText = `LOG: Switched to ${symbol} on ${timeframe} timeframe`;
     }
+};
 
-    function initScanner() {
-        const list = document.getElementById('signals-list');
-        signals.forEach((s, i) => {
-            const card = document.createElement('div');
-            card.className = `signal-card ${i === 0 ? 'active-target' : ''} ${s.status === 'critical' ? 'flash' : ''}`;
-            card.innerHTML = `
-                <div class="card-row">
-                    <span class="pair-name">${s.pair.split(':')[1]}</span>
-                    <span class="timeframe-tag">${s.tf}</span>
-                </div>
-                <div class="card-row">
-                    <span class="pattern-info">${s.pattern}</span>
-                    <span class="entry-prz">PRZ: ${s.prz}</span>
-                </div>
-            `;
-            card.onclick = () => {
-                document.querySelectorAll('.signal-card').forEach(c => c.classList.remove('active-target'));
-                card.classList.add('active-target');
-                loadChart(s.pair, s.tf_val);
-            };
-            list.appendChild(card);
-        });
-        loadChart(signals[0].pair, signals[0].tf_val);
+function updateChart() {
+    let s = document.getElementById('symIn').value.toUpperCase();
+    if (s) {
+        if (!s.endsWith('USDT')) s += 'USDT';
+        UI.loadChart(s, '60');
     }
+}
 
-    window.onload = initScanner;
+window.onload = () => { UI.loadChart('BTCUSDT', '60'); Core.scanAll(); setInterval(()=>Core.scanAll(), 300000); };
 </script>
-
 </body>
 </html>
