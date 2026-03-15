@@ -3,277 +3,259 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NAYRO VEX | PRO TRADING TERMINAL</title>
+    <title>NAYRO VEX | GLOBAL ENGINE</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
-        /* الجزء 1: التنسيق البصري المتقدم */
         :root {
-            --neon-green: #00ff66;
-            --neon-red: #ff3e3e;
-            --deep-dark: #050608;
-            --panel-bg: #0d0e12;
-            --card-bg: #161a23;
-            --border: #1e222d;
+            --neon-cyan: #00d2ff;
+            --neon-green: #39ff14;
+            --neon-red: #ff3131;
+            --bg-dark: #020205;
+            --panel-bg: #0a0b10;
+            --card-bg: #12141d;
+            --border-clr: #1f222e;
         }
 
         body {
-            background: var(--deep-dark);
-            color: white;
+            background: var(--bg-dark);
+            color: #e0e0e0;
             margin: 0;
             font-family: 'Tajawal', sans-serif;
             overflow: hidden;
             height: 100vh;
         }
 
-        #main-layout { display: flex; flex-direction: column; height: 100vh; }
-
-        /* الجزء 17: لوحة الإحصائيات (Stats Bar) */
-        .status-bar {
-            height: 35px;
-            background: #000;
-            font-size: 0.75rem;
+        /* الجزء العلوي: حالة النظام والمسح */
+        .system-header {
+            height: 40px;
+            background: rgba(0,0,0,0.8);
             display: flex;
             align-items: center;
             padding: 0 15px;
-            color: var(--neon-green);
-            border-bottom: 1px solid var(--border);
-            font-family: 'Orbitron';
+            border-bottom: 1px solid var(--border-clr);
             justify-content: space-between;
         }
 
-        #chart-area { flex: 2; background: #000; position: relative; border-bottom: 2px solid var(--border); }
+        .engine-status { font-family: 'Orbitron'; font-size: 0.7rem; color: var(--neon-cyan); letter-spacing: 1px; }
+        .live-pulse { width: 6px; height: 6px; background: var(--neon-green); border-radius: 50%; display: inline-block; margin-left: 8px; box-shadow: 0 0 10px var(--neon-green); animation: pulse 1.2s infinite; }
 
-        #scanner-area {
-            flex: 1.5;
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+        /* منطقة الرسم البياني */
+        #chart-container { flex: 2; height: 55vh; border-bottom: 2px solid var(--border-clr); background: #000; }
+
+        /* منطقة الرادار الإحترافية */
+        #radar-section {
+            height: 45vh;
             background: var(--panel-bg);
+            padding: 12px;
             overflow-y: auto;
-            padding: 10px;
         }
 
-        /* الجزء 8: تنسيق كروت الإشارات للموبايل */
-        .signal-card {
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 12px;
-            margin-bottom: 10px;
-            background: var(--card-bg);
+        .radar-title {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: 0.3s;
+            border-bottom: 1px solid var(--border-clr);
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+        }
+
+        .radar-title h2 { font-family: 'Orbitron'; font-size: 0.85rem; color: var(--neon-green); margin: 0; }
+
+        /* كرت الإشارة المطور */
+        .signal-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-clr);
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s, border-color 0.2s;
             cursor: pointer;
-            position: relative;
-            overflow: hidden;
         }
 
-        .signal-card.liquid-boost {
-            border-right: 4px solid var(--neon-green);
-            box-shadow: inset 5px 0 15px rgba(0, 255, 102, 0.05);
-        }
+        .signal-card:hover { border-color: var(--neon-cyan); }
+        .signal-card.high-liq { border-right: 3px solid var(--neon-green); background: linear-gradient(90deg, #12141d 0%, #16201a 100%); }
 
-        .pair-info .sym { font-family: 'Orbitron'; font-weight: 900; font-size: 1.1rem; }
-        .tf-tag { font-size: 0.6rem; background: var(--border); padding: 2px 6px; border-radius: 4px; margin-right: 5px; }
-        .pattern-name { color: var(--neon-green); font-weight: bold; font-size: 0.85rem; display: block; margin-top: 4px; }
-        
-        .trade-levels { font-size: 0.7rem; color: #888; margin-top: 5px; }
-        .tp-text { color: var(--neon-green); }
-        .sl-text { color: var(--neon-red); }
+        .sym-box .pair { font-family: 'Orbitron'; font-weight: 800; font-size: 1rem; color: #fff; }
+        .sym-box .pattern { font-size: 0.75rem; color: var(--neon-cyan); font-weight: bold; margin-top: 3px; display: block; }
+        .tf-badge { font-size: 10px; background: #252936; padding: 2px 5px; border-radius: 3px; color: #aaa; margin-right: 5px; }
 
-        .live-dot { width: 8px; height: 8px; background: var(--neon-green); border-radius: 50%; animation: pulse 1.5s infinite; margin-left: 8px; display: inline-block; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
+        .price-box { text-align: left; }
+        .price-box .val { font-family: 'Orbitron'; font-size: 1.1rem; color: #fff; }
+        .levels-info { font-size: 0.65rem; color: #666; margin-top: 4px; }
+        .tp { color: var(--neon-green); }
+        .sl { color: var(--neon-red); }
 
-        /* تجميل شريط التمرير */
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: var(--deep-dark); }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+        /* شريط المسح (Progress) */
+        #scan-progress { position: fixed; top: 0; left: 0; height: 2px; background: var(--neon-cyan); width: 0%; transition: width 0.3s; z-index: 1000; }
     </style>
 </head>
 <body>
 
-<div id="main-layout">
-    <div class="status-bar">
-        <div>
-            <div class="live-dot"></div>
-            <span id="status-text">NAYRO VEX ENGINE V1.0 - SCANNING</span>
-        </div>
-        <div id="market-stats" style="font-size: 0.6rem; color: #555;">Connecting to Binance...</div>
-    </div>
-    
-    <div id="chart-area">
-        <div id="tv_chart_container" style="height: 100%;"></div>
-    </div>
+<div id="scan-progress"></div>
 
-    <div id="scanner-area">
-        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-            <h3 style="font-size: 0.8rem; color: var(--neon-green); margin: 0; font-family: 'Orbitron';">RADAR SIGNALS</h3>
-            <span style="font-size: 0.65rem; color: #444;">Last Update: <span id="last-time">--:--</span></span>
-        </div>
-        <div id="list-container">
-            </div>
+<div class="system-header">
+    <div class="engine-status">
+        <div class="live-pulse"></div>
+        NAYRO VEX ENGINE V1.0 - <span id="status-msg">INITIALIZING SCANNER...</span>
     </div>
+    <div id="market-time" style="font-size: 10px; color: #555;">SCANNING ALL USDT PAIRS</div>
+</div>
+
+<div id="chart-container">
+    <div id="tv_chart" style="height: 100%;"></div>
+</div>
+
+<div id="radar-section">
+    <div class="radar-title">
+        <h2>LIVE HARMONIC RADAR</h2>
+        <span id="stat-count" style="font-size: 10px; color: #444;">Pairs Found: 0</span>
+    </div>
+    <div id="signal-list">
+        </div>
 </div>
 
 <script src="https://s3.tradingview.com/tv.js"></script>
 
 <script>
-/**
- * الجزء 18: الربط الشامل لجميع المحركات البرمجية
- * تم تجميع الأجزاء: 2, 4, 5, 6, 7, 10, 12, 13, 14, 15, 16
+/** * محرك البحث الشامل والمطور
+ * يدعم الآن جلب جميع العملات وفلترتها وفحصها بنظام الدفعات
  */
 
-const CONFIG = {
-    pairs: ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT', 'XRPUSDT', 'AVAXUSDT', 'ADAUSDT', 'DOTUSDT'],
-    timeframes: ['15m', '1h', '4h']
+const HarmonicConfig = {
+    deviation: 3, // حساسية استخراج القمم والقيعان
+    minScore: 75,
+    maxHistory: 20
 };
 
-// الجزء 2: منطق الهارمونيك المطور
 const HarmonicLogic = {
     isGartley: (ab, ad) => (ab >= 0.61 && ab <= 0.65 && ad >= 0.78 && ad <= 0.79),
     isBat: (ab, ad) => (ab >= 0.38 && ab <= 0.52 && ad >= 0.88 && ad <= 0.89),
-    isButterfly: (ab, ad) => (ab >= 0.78 && ab <= 0.82 && ad >= 1.27 && ad <= 1.30),
-    isShark: (ad) => (ad >= 0.88 && ad <= 1.13)
+    isShark: (ad) => (ad >= 0.88 && ad <= 1.13),
+    isCypher: (ab, ad) => (ab >= 0.38 && ab <= 0.62 && ad <= 0.78)
 };
 
-// الجزء 4 & 5: محرك ZigZag والسيولة
-const MarketEngine = {
-    calculateZigZag(data) {
-        let points = [];
-        for (let i = 2; i < data.length - 2; i++) {
-            if (data[i] > data[i-1] && data[i] > data[i+1]) points.push({p: data[i], i: i, t: 'H'});
-            if (data[i] < data[i-1] && data[i] < data[i+1]) points.push({p: data[i], i: i, t: 'L'});
-        }
-        return points.slice(-5);
+const ScannerCore = {
+    async fetchAllPairs() {
+        try {
+            const r = await fetch('https://api.binance.com/api/v3/exchangeInfo');
+            const d = await r.json();
+            return d.symbols.filter(s => s.quoteAsset === 'USDT' && s.status === 'TRADING').map(s => s.symbol);
+        } catch(e) { return ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'AVAXUSDT']; }
     },
-    checkLiquidity(volumes) {
-        const avg = volumes.slice(-20).reduce((a, b) => a + b, 0) / 20;
-        return volumes[volumes.length - 1] > (avg * 2.3); // مسح سيولة انفجاري
-    }
-};
 
-// الجزء 15: حساب الأهداف وإدارة المخاطر
-const TradePlanner = {
-    getLevels(points, pattern) {
-        const D = points[4].p;
-        const A = points[1].p;
-        const X = points[0].p;
-        const range = Math.abs(A - D);
-        return {
-            tp1: D + (range * 0.382) * (D < A ? 1 : -1),
-            tp2: D + (range * 0.618) * (D < A ? 1 : -1),
-            sl: X
-        };
-    }
-};
-
-// الجزء 7 & 14: المتحكم الرئيسي والمسح المتعدد
-const MasterController = {
-    isScanning: false,
-    
-    async startScan() {
-        if(this.isScanning) return;
-        this.isScanning = true;
+    async runGlobalScan() {
+        const symbols = await this.fetchAllPairs();
+        const msg = document.getElementById('status-msg');
+        const progress = document.getElementById('scan-progress');
         
-        for (const symbol of CONFIG.pairs) {
-            for (const tf of CONFIG.timeframes) {
-                try {
-                    const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${tf}&limit=100`);
-                    const klines = await res.json();
-                    
-                    const closes = klines.map(k => parseFloat(k[4]));
-                    const volumes = klines.map(k => parseFloat(k[5]));
-                    const points = MarketEngine.calculateZigZag(closes);
-                    
-                    if (points.length < 5) continue;
+        for (let i = 0; i < symbols.length; i += 15) {
+            const batch = symbols.slice(i, i + 15);
+            const p = Math.floor((i / symbols.length) * 100);
+            progress.style.width = p + "%";
+            msg.innerText = `SCANNING ${i}/${symbols.length} PAIRS...`;
 
-                    const [X, A, B, C, D] = points.map(pt => pt.p);
-                    const ab = Math.abs(A-B)/Math.abs(X-A);
-                    const ad = Math.abs(A-D)/Math.abs(X-A);
-
-                    let pattern = null;
-                    if (HarmonicLogic.isGartley(ab, ad)) pattern = "GARTLEY";
-                    else if (HarmonicLogic.isBat(ab, ad)) pattern = "BAT";
-                    else if (HarmonicLogic.isShark(ad)) pattern = "SHARK";
-
-                    if (pattern) {
-                        const isLiquid = MarketEngine.checkLiquidity(volumes);
-                        const levels = TradePlanner.getLevels(points, pattern);
-                        UI_Renderer.renderSignal(symbol, pattern, tf, D, isLiquid, levels);
-                        AlertSystem.notify();
-                    }
-                } catch (e) { console.error("Scan Error:", e); }
-            }
+            await Promise.all(batch.map(async (s) => {
+                await this.checkPattern(s, '1h');
+                await this.checkPattern(s, '15m');
+            }));
+            await new Promise(r => setTimeout(r, 600)); // حماية الـ IP
         }
-        this.isScanning = false;
-        document.getElementById('last-time').innerText = new Date().toLocaleTimeString();
+        progress.style.width = "0%";
+        msg.innerText = "FULL SCAN COMPLETED. WAITING NEXT CYCLE...";
+    },
+
+    async checkPattern(symbol, tf) {
+        try {
+            const r = await fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${tf}&limit=50`);
+            const k = await r.json();
+            const closes = k.map(c => parseFloat(c[4]));
+            const vol = parseFloat(k[k.length-1][5]);
+            
+            const points = this.getZigZag(closes);
+            if(points.length < 5) return;
+
+            const [X, A, B, C, D] = points.map(p => p.val);
+            const ab = Math.abs(A-B)/Math.abs(X-A);
+            const ad = Math.abs(A-D)/Math.abs(X-A);
+
+            let name = "";
+            if(HarmonicLogic.isShark(ad)) name = "SHARK";
+            else if(HarmonicLogic.isGartley(ab, ad)) name = "GARTLEY";
+            else if(HarmonicLogic.isBat(ab, ad)) name = "BAT";
+
+            if(name) {
+                const isHighVol = vol > (k.slice(-10).reduce((a,b)=>a+parseFloat(b[5]),0)/10 * 1.8);
+                const lv = this.calcLevels(X, A, D);
+                UI.addSignal(symbol, name, tf, D, isHighVol, lv);
+            }
+        } catch(e) {}
+    },
+
+    getZigZag(data) {
+        let pts = [];
+        for(let i=2; i<data.length-2; i++) {
+            if(data[i] > data[i-1] && data[i] > data[i+1]) pts.push({val: data[i], type:'H'});
+            if(data[i] < data[i-1] && data[i] < data[i+1]) pts.push({val: data[i], type:'L'});
+        }
+        return pts.slice(-5);
+    },
+
+    calcLevels(X, A, D) {
+        const range = Math.abs(A-D);
+        const dir = D < A ? 1 : -1;
+        return { tp: D + (range * 0.618 * dir), sl: X };
     }
 };
 
-// الجزء 6 & 8: العرض والتنبيهات
-const UI_Renderer = {
-    renderSignal(symbol, pattern, tf, price, isLiq, lv) {
-        const container = document.getElementById('list-container');
-        const id = `${symbol}-${pattern}-${tf}`;
-        if (document.getElementById(id)) return; // منع التكرار
+const UI = {
+    addSignal(sym, pat, tf, pr, liq, lv) {
+        const list = document.getElementById('signal-list');
+        const id = `${sym}-${pat}-${tf}`;
+        if(document.getElementById(id)) return;
 
         const card = document.createElement('div');
         card.id = id;
-        card.className = `signal-card ${isLiq ? 'liquid-boost' : ''}`;
+        card.className = `signal-card ${liq ? 'high-liq' : ''}`;
         card.innerHTML = `
-            <div class="pair-info">
-                <span class="tf-tag">${tf.toUpperCase()}</span>
-                <span class="sym">${symbol}</span>
-                <span class="pattern-name">${pattern}</span>
-                <div class="trade-levels">
-                    TP1: <span class="tp-text">${lv.tp1.toFixed(4)}</span> | 
-                    SL: <span class="sl-text">${lv.sl.toFixed(4)}</span>
-                </div>
+            <div class="sym-box">
+                <span class="tf-badge">${tf.toUpperCase()}</span>
+                <span class="pair">${sym}</span>
+                <span class="pattern">${pat} DETECTED</span>
             </div>
-            <div style="text-align:left;">
-                <div style="font-family:'Orbitron'; font-weight:bold;">$${price.toFixed(4)}</div>
-                <div style="font-size:0.6rem; color:${isLiq ? 'var(--neon-green)' : '#555'};">
-                    ${isLiq ? '🔥 LIQUIDITY SWEEP' : 'NORMAL VOLUME'}
+            <div class="price-box">
+                <div class="val">$${pr.toFixed(pr < 1 ? 4 : 2)}</div>
+                <div class="levels-info">
+                    TP: <span class="tp">${lv.tp.toFixed(2)}</span> | SL: <span class="sl">${lv.sl.toFixed(2)}</span>
                 </div>
             </div>
         `;
-        card.onclick = () => loadChart(symbol, tf);
-        container.prepend(card);
-        
-        // الجزء 10: حماية الذاكرة (إزالة الكروت القديمة)
-        if (container.children.length > 15) container.lastChild.remove();
+        card.onclick = () => this.loadTV(sym, tf);
+        list.prepend(card);
+        document.getElementById('stat-count').innerText = `Signals: ${list.children.length}`;
+        if(list.children.length > 20) list.lastChild.remove();
+        new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play().catch(()=>{});
+    },
+
+    loadTV(symbol, tf) {
+        const map = {'15m':'15', '1h':'60'};
+        new TradingView.widget({
+            "autosize": true, "symbol": "BINANCE:"+symbol, "interval": map[tf] || "60",
+            "timezone": "Africa/Algiers", "theme": "dark", "style": "1",
+            "locale": "ar", "container_id": "tv_chart", "hide_side_toolbar": true
+        });
     }
 };
 
-const AlertSystem = {
-    notify() {
-        new Audio('https://www.soundjay.com/buttons/beep-01a.mp3').play().catch(()=>{});
-    }
-};
-
-// الجزء 11: محرك الرسوميات (TradingView)
-function loadChart(symbol, tf) {
-    const intervalMap = { '15m': '15', '1h': '60', '4h': '240' };
-    new TradingView.widget({
-        "autosize": true,
-        "symbol": "BINANCE:" + symbol,
-        "interval": intervalMap[tf] || "60",
-        "timezone": "Africa/Algiers",
-        "theme": "dark",
-        "style": "1",
-        "locale": "ar",
-        "container_id": "tv_chart_container",
-        "hide_side_toolbar": true,
-        "enable_publishing": false,
-        "allow_symbol_change": true,
-        "save_image": false
-    });
-}
-
-// الجزء 9: الإقلاع الذاتي
 window.onload = () => {
-    loadChart('BTCUSDT', '1h');
-    MasterController.startScan();
-    setInterval(() => MasterController.startScan(), 60000); // تحديث آلي كل دقيقة
+    UI.loadTV('BTCUSDT', '1h');
+    ScannerCore.runGlobalScan();
+    setInterval(() => ScannerCore.runGlobalScan(), 300000); // تحديث شامل كل 5 دقائق
 };
 </script>
 </body>
