@@ -3,63 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LIANA PRO-X</title>
+    <title>LIANA SPOT FINAL</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Tajawal:wght@700&display=swap" rel="stylesheet">
     <style>
-        :root { --army: #4b5320; --neon: #00ff41; --bg: #010101; }
+        :root { --neon: #00ff41; --bg: #010101; --gold: #ffd700; }
         body { background: var(--bg); color: var(--neon); margin: 0; font-family: 'Tajawal', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
-        /* هيدر نظيف بدون أسماء إضافية */
-        .header { height: 45px; background: #000; display: flex; align-items: center; padding: 0 15px; justify-content: space-between; border-bottom: 2px solid var(--army); }
-        .logo { font-family: 'Orbitron'; font-weight: 900; color: var(--neon); font-size: 1.1rem; }
-        
-        .auto-toggle { display: flex; align-items: center; gap: 8px; font-size: 0.65rem; color: #fff; }
-        .switch { position: relative; display: inline-block; width: 34px; height: 18px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 18px; }
-        .slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--neon); }
-        input:checked + .slider:before { transform: translateX(16px); }
+        .header { height: 45px; background: #000; display: flex; align-items: center; padding: 0 15px; justify-content: space-between; border-bottom: 2px solid #333; }
+        .logo { font-family: 'Orbitron'; font-weight: 900; color: var(--neon); font-size: 0.9rem; }
+        .status { font-size: 0.6rem; color: var(--gold); border: 1px solid var(--gold); padding: 2px 5px; }
 
-        /* أزرار النماذج */
-        .controls { background: #080808; padding: 6px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-        .btn-act { background: #000; border: 1px solid var(--army); color: var(--army); padding: 10px; cursor: pointer; font-family: 'Orbitron'; font-size: 0.6rem; font-weight: bold; transition: 0.2s; }
-        .btn-act.active { background: var(--army); color: #000; box-shadow: 0 0 10px var(--neon); border-color: var(--neon); }
+        .controls { background: #080808; padding: 8px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+        .btn-act { background: #111; border: 1px solid #333; color: #666; padding: 10px; cursor: pointer; font-family: 'Orbitron'; font-size: 0.6rem; font-weight: bold; transition: 0.3s; }
+        .btn-act.active { background: var(--neon); color: #000; border-color: #fff; box-shadow: 0 0 10px var(--neon); }
 
-        #tv_container { flex: 1; width: 100%; border-bottom: 2px solid var(--army); background: #000; }
+        #tv_container { flex: 1; width: 100%; background: #000; }
         
-        #radar { height: 28vh; background: #000; overflow-y: auto; padding: 8px; }
+        #radar { height: 28vh; background: #000; overflow-y: auto; padding: 8px; border-top: 2px solid #333; }
         .sig-row { 
-            background: rgba(0, 255, 65, 0.05); border: 1px solid var(--army); 
-            padding: 10px; margin-bottom: 6px; display: flex; justify-content: space-between; 
-            align-items: center; border-right: 4px solid var(--neon);
-            animation: fadeIn 0.3s ease;
+            background: #0a0a0a; border: 1px solid #222; padding: 12px; margin-bottom: 6px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            border-right: 3px solid var(--neon); animation: fadeIn 0.4s ease;
         }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .sig-info b { font-family: 'Orbitron'; font-size: 0.9rem; color: #fff; }
-        .pat-name { color: var(--neon); font-size: 0.7rem; font-weight: bold; font-family: 'Orbitron'; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .sig-info b { font-family: 'Orbitron'; font-size: 0.95rem; color: #fff; }
+        .pat-label { color: var(--gold); font-size: 0.8rem; font-weight: bold; font-family: 'Orbitron'; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <div class="logo">LIANA PRO-X</div>
-    <div class="auto-toggle">
-        <span>AUTO-SWITCH</span>
-        <label class="switch">
-            <input type="checkbox" id="autoMode" checked>
-            <span class="slider"></span>
-        </label>
+    <div class="logo">LIANA <span style="color:#fff">SPOT</span></div>
+    <div style="display:flex; align-items:center; gap:8px;">
+        <span class="status">LIVE SCANNER</span>
+        <input type="checkbox" id="autoMode" checked style="accent-color: var(--neon);">
     </div>
 </div>
 
 <div class="controls">
-    <button class="btn-act" onclick="Engine.toggle('BUTTERFLY')">BUTTERFLY</button>
-    <button class="btn-act" onclick="Engine.toggle('BAT')">BAT</button>
     <button class="btn-act" onclick="Engine.toggle('GARTLEY')">GARTLEY</button>
-    <button class="btn-act" onclick="Engine.toggle('SHARK')">SHARK</button>
-    <button class="btn-act" onclick="Engine.toggle('CYPHER')">CYPHER</button>
+    <button class="btn-act" onclick="Engine.toggle('BAT')">BAT</button>
+    <button class="btn-act" onclick="Engine.toggle('BUTTERFLY')">BUTTERFLY</button>
     <button class="btn-act" onclick="Engine.toggle('CRAB')">CRAB</button>
+    <button class="btn-act" onclick="Engine.toggle('CYPHER')">CYPHER</button>
+    <button class="btn-act" onclick="Engine.toggle('SHARK')">SHARK</button>
 </div>
 
 <div id="tv_container"></div>
@@ -71,15 +58,16 @@ const Logic = {
     selected: new Set(),
     check(pts) {
         if (pts.length < 5) return null;
-        const [X, A, B, C, D] = pts.map(p => p.v);
-        const xa = Math.abs(A-X), ab = Math.abs(B-A)/xa, ad = Math.abs(D-A)/xa;
-        const t = 0.08; 
+        const [X, A, B, C, D] = pts;
+        const xa = Math.abs(A - X), ab = Math.abs(B - A) / xa, ad = Math.abs(D - A) / xa;
+        const t = 0.07; // دقة متوازنة 7%
+
         if (this.near(ab, 0.618, t) && this.near(ad, 0.786, t)) return "GARTLEY";
-        if (this.near(ab, 0.447, 0.15) && this.near(ad, 0.886, t)) return "BAT";
+        if (this.near(ab, 0.382, 0.1) && this.near(ad, 0.886, t)) return "BAT";
         if (this.near(ab, 0.786, t) && this.near(ad, 1.27, t)) return "BUTTERFLY";
-        if (this.near(ab, 0.886, 0.15) && this.near(ad, 1.618, t)) return "CRAB";
-        if (this.near(ad, 0.786, 0.12)) return "CYPHER";
-        if (ad >= 0.886 && ad <= 1.13) return "SHARK";
+        if (this.near(ab, 0.886, t) && this.near(ad, 1.618, t)) return "CRAB";
+        if (this.near(ab, 0.382, 0.1) && this.near(ad, 0.786, t)) return "CYPHER";
+        if (ad >= 0.88 && ad <= 1.13) return "SHARK";
         return null;
     },
     near(v, t, e) { return v >= t - e && v <= t + e; }
@@ -87,75 +75,79 @@ const Logic = {
 
 const Engine = {
     running: false,
-    lastSwitch: 0,
     history: new Set(),
+    lastSwitch: 0,
     async toggle(p) {
-        const btn = Array.from(document.querySelectorAll('.btn-act')).find(b => b.innerText === p);
-        if (Logic.selected.has(p)) { Logic.selected.delete(p); btn.classList.remove('active'); }
-        else { Logic.selected.add(p); btn.classList.add('active'); if (!this.running) { this.running = true; this.scan(); } }
+        const btns = document.querySelectorAll('.btn-act');
+        btns.forEach(b => { if(b.innerText === p) b.classList.toggle('active'); });
+        if (Logic.selected.has(p)) Logic.selected.delete(p);
+        else Logic.selected.add(p);
+        if (!this.running && Logic.selected.size > 0) { this.running = true; this.scan(); }
     },
     async scan() {
         while (this.running) {
             try {
                 const res = await fetch('https://api.binance.com/api/v3/exchangeInfo').then(r => r.json());
-                // فلترة ذكية: استثناء العملات المحذوفة BEAR/BULL والعملات غير النشطة
-                const activePairs = res.symbols.filter(s => s.status === 'TRADING' && s.quoteAsset === 'USDT' && !s.symbol.includes('BEAR') && !s.symbol.includes('BULL')).map(s => s.symbol).slice(0, 150);
-                
-                for (let s of activePairs) {
+                // الفلترة الصارمة للسبوت فقط
+                const spotPairs = res.symbols.filter(s => 
+                    s.status === 'TRADING' && s.quoteAsset === 'USDT' && s.isSpotTradingAllowed
+                ).map(s => s.symbol).slice(0, 150);
+
+                for (let s of spotPairs) {
                     if (Logic.selected.size === 0) break;
                     await this.analyze(s);
-                    await new Promise(r => setTimeout(r, 40));
+                    await new Promise(r => setTimeout(r, 60)); // لتجنب حظر الـ API
                 }
             } catch (e) {}
-            await new Promise(r => setTimeout(r, 15000));
+            await new Promise(r => setTimeout(r, 10000));
         }
     },
     async analyze(s) {
-        for (let tf of ['15m', '1h']) {
-            try {
-                const k = await fetch(`https://api.binance.com/api/v3/klines?symbol=${s}&interval=${tf}&limit=45`).then(res => res.json());
-                const d = k.map(c => parseFloat(c[4]));
-                const pts = this.getPivots(d);
-                const res = Logic.check(pts);
-                if (res && Logic.selected.has(res)) this.trigger(s, res, tf);
-            } catch (e) {}
-        }
+        try {
+            const k = await fetch(`https://api.binance.com/api/v3/klines?symbol=${s}&interval=1h&limit=50`).then(res => res.json());
+            const prices = k.map(c => parseFloat(c[4]));
+            
+            // خوارزمية البحث عن القمم والقيعان الحقيقية
+            let pivots = [];
+            for (let i = 2; i < prices.length - 2; i++) {
+                if ((prices[i] > prices[i-1] && prices[i] > prices[i+1]) || 
+                    (prices[i] < prices[i-1] && prices[i] < prices[i+1])) {
+                    if (pivots.length === 0 || pivots[pivots.length-1] !== prices[i]) pivots.push(prices[i]);
+                }
+            }
+            
+            const found = Logic.check(pivots.slice(-5));
+            if (found && Logic.selected.has(found)) this.trigger(s, found);
+        } catch (e) {}
     },
-    getPivots(d) {
-        let p = [];
-        for (let i = 2; i < d.length - 2; i++) {
-            if ((d[i] > d[i-1] && d[i] > d[i+1]) || (d[i] < d[i-1] && d[i] < d[i+1])) p.push({v: d[i]});
-        }
-        return p.slice(-5);
-    },
-    trigger(s, p, tf) {
-        const id = `${s}-${p}-${tf}`;
+    trigger(s, p) {
+        const id = `${s}-${p}`;
         if (this.history.has(id)) return;
         this.history.add(id);
 
         const row = document.createElement('div');
         row.className = 'sig-row';
-        row.innerHTML = `<div class="sig-info"><b>${s}</b> <small style="color:var(--army)">/ ${tf}</small></div><div class="pat-name">${p}</div>`;
-        row.onclick = () => UI.update(s, tf);
+        row.innerHTML = `<div><b>${s}</b> <small>1h</small></div><div class="pat-label">${p}</div>`;
+        row.onclick = () => UI.update(s);
         document.getElementById('list').prepend(row);
 
-        if (document.getElementById('autoMode').checked && (Date.now() - this.lastSwitch > 12000)) {
+        if (document.getElementById('autoMode').checked && Date.now() - this.lastSwitch > 15000) {
             this.lastSwitch = Date.now();
-            UI.update(s, tf);
+            UI.update(s);
         }
     }
 };
 
 const UI = {
-    update(s, t) {
-        const tfMap = { '15m': '15', '1h': '60' };
+    update(s) {
+        document.getElementById('tv_container').innerHTML = ""; // مسح القديم لمنع تداخل الشاشات
         new TradingView.widget({
-            "autosize": true, "symbol": "BINANCE:"+s, "interval": tfMap[t] || "60",
+            "autosize": true, "symbol": "BINANCE:"+s, "interval": "60",
             "theme": "dark", "container_id": "tv_container", "locale": "ar", "style": "1"
         });
     }
 };
-window.onload = () => UI.update('BTCUSDT', '1h');
+window.onload = () => UI.update('BTCUSDT');
 </script>
 </body>
 </html>
