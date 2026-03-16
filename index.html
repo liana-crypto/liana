@@ -2,161 +2,209 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>LIANA AI | رادار الهارمونيك المتكامل</title>
+    <title>LIANA SNIPER V7.3 | Ultimate Sniper</title>
     <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Tajawal:wght@500;800&display=swap" rel="stylesheet">
     <style>
-        :root { --neon: #00ff41; --bg: #000; --panel: #0d0d0d; --text: #d1d4dc; }
-        body { background: var(--bg); color: var(--text); margin: 0; font-family: 'Tajawal', sans-serif; display: flex; height: 100vh; overflow: hidden; }
+        :root { --neon: #00ff41; --bg: #050505; --panel: #0d0d0d; --gartley: #00ff41; --bat: #00d4ff; --butterfly: #bf00ff; --crab: #ffd700; --tp: #00ff41; --sl: #ff3131; }
+        body { background: var(--bg); color: #fff; margin: 0; font-family: 'Tajawal', sans-serif; display: flex; height: 100vh; overflow: hidden; }
         
-        .sidebar { width: 300px; background: #050505; border-left: 1px solid #1a1a1a; display: flex; flex-direction: column; padding: 15px; }
-        .radar-box { flex: 1; overflow-y: auto; margin-top: 10px; }
-        
+        /* Sidebar & Radar */
+        .sidebar { width: 340px; background: #000; border-left: 1px solid #1a1a1a; display: flex; flex-direction: column; padding: 15px; }
+        .logo { font-family: 'Orbitron'; font-weight: 900; color: var(--neon); font-size: 1.5rem; text-align: center; margin-bottom: 10px; }
+        .filters { background: #0a0a0a; padding: 10px; border-radius: 6px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+        .filter-item { font-size: 0.65rem; color: #666; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+        .filter-item input:checked + span { color: var(--neon); }
+        .search-bar { width: 100%; background: #111; border: 1px solid #222; padding: 10px; color: #fff; border-radius: 4px; box-sizing: border-box; margin-bottom: 10px; font-family: 'Tajawal'; }
+
+        .radar-box { flex: 1; overflow-y: auto; scrollbar-width: thin; }
+        .sig-card { background: var(--panel); border: 1px solid #222; padding: 12px; margin-bottom: 8px; border-radius: 8px; cursor: pointer; transition: 0.2s; position: relative; }
+        .sig-card:hover { border-color: var(--neon); transform: translateX(-5px); }
+        .sig-card.high-score { border-right: 4px solid var(--neon); background: linear-gradient(90deg, #0d0d0d 0%, #00ff410a 100%); }
+        .score-val { position: absolute; top: 12px; left: 12px; font-family: 'Orbitron'; font-size: 0.6rem; color: var(--neon); }
+
+        /* Main Viewport */
         .main-stage { flex: 1; display: flex; flex-direction: column; }
-        #chart_container { flex: 1; }
+        .top-nav { height: 60px; background: #000; border-bottom: 1px solid #1a1a1a; display: flex; align-items: center; padding: 0 20px; justify-content: space-between; }
+        .btn-group { display: flex; gap: 6px; }
+        .nav-btn { background: #111; border: 1px solid #222; color: #ccc; padding: 6px 10px; border-radius: 4px; font-size: 0.7rem; cursor: pointer; font-family: 'Orbitron'; transition: 0.3s; }
+        .nav-btn:hover { border-color: var(--neon); color: #fff; }
+        .nav-btn.active { background: var(--neon); color: #000; border-color: var(--neon); font-weight: 900; }
 
-        .sig-card { 
-            background: var(--panel); border: 1px solid #222; padding: 12px; margin-bottom: 8px; 
-            border-radius: 6px; cursor: pointer; transition: 0.2s; border-right: 4px solid var(--neon);
-        }
-        .sig-card:hover { transform: translateX(-5px); background: #111; }
-        .sig-card .info { display: flex; justify-content: space-between; font-family: 'Orbitron'; font-size: 0.9rem; }
-        .probability { color: var(--neon); font-size: 0.7rem; }
-
-        .status-bar { height: 40px; background: #050505; border-bottom: 1px solid #1a1a1a; display: flex; align-items: center; padding: 0 20px; font-size: 0.75rem; justify-content: space-between; }
-        .loader { width: 10px; height: 10px; background: var(--neon); border-radius: 50%; display: inline-block; animation: pulse 1s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        #chart_container { flex: 1; position: relative; }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
-    <div style="font-family:'Orbitron'; font-weight:900; color:var(--neon); font-size:1.4rem; margin-bottom:20px;">LIANA AI V5</div>
-    <div style="font-size:0.7rem; color:#666;">🔴 LIVE SCANNER (300+ PAIRS)</div>
+    <div class="logo">LIANA <span style="color:#fff">V7.3</span></div>
+    <div class="filters" id="model-filters">
+        <label class="filter-item"><input type="checkbox" checked value="GARTLEY" onchange="Sniper.filterRadar()"> <span>GARTLEY</span></label>
+        <label class="filter-item"><input type="checkbox" checked value="BAT" onchange="Sniper.filterRadar()"> <span>BAT</span></label>
+        <label class="filter-item"><input type="checkbox" checked value="BUTTERFLY" onchange="Sniper.filterRadar()"> <span>BUTTERFLY</span></label>
+        <label class="filter-item"><input type="checkbox" checked value="CRAB" onchange="Sniper.filterRadar()"> <span>CRAB</span></label>
+    </div>
+    <input type="text" class="search-bar" id="searchCoin" placeholder="بحث سريع عن العملة..." onkeyup="Sniper.filterRadar()">
     <div class="radar-box" id="radar-list"></div>
+    <button class="nav-btn" style="width:100%; margin-top:10px; color:red" onclick="Sniper.clearRadar()">CLEAR RADAR</button>
 </div>
 
 <div class="main-stage">
-    <div class="status-bar">
-        <div><span class="loader"></span> نظام البحث: <b id="current-scan">Initializing...</b></div>
-        <div id="pair-stats">Pairs: 0</div>
+    <div class="top-nav">
+        <div id="status" style="font-size:0.75rem;"><span style="color:var(--neon)">●</span> جاري مراقبة السوق...</div>
+        <div class="btn-group">
+            <select class="nav-btn" id="tf-select" onchange="Sniper.changeTF()">
+                <option value="15m">15M</option>
+                <option value="1h" selected>1H</option>
+                <option value="4h">4H</option>
+            </select>
+            <button class="nav-btn" id="pause-btn" onclick="Sniper.toggleScan()">PAUSE</button>
+            <button class="nav-btn" onclick="Sniper.resetChart()">RESET CHART</button>
+            <button class="nav-btn" onclick="Sniper.exportCSV()">CSV</button>
+        </div>
     </div>
     <div id="chart_container"></div>
 </div>
 
 <script>
-const LianaV5 = {
-    chart: null, candleSeries: null, patternLines: [], markers: [],
-    allPairs: [],
+const Sniper = {
+    chart: null, candleSeries: null, activeSeries: [],
+    pairs: [], isPaused: false, currentTF: '1h',
 
     async init() {
-        const chartOptions = { 
-            layout: { backgroundColor: '#000000', textColor: '#d1d4dc' },
-            grid: { vertLines: { color: '#111' }, horzLines: { color: '#111' } },
-            timeScale: { borderColor: '#222', timeVisible: true }
-        };
-        this.chart = LightweightCharts.createChart(document.getElementById('chart_container'), chartOptions);
+        this.chart = LightweightCharts.createChart(document.getElementById('chart_container'), {
+            layout: { backgroundColor: '#000', textColor: '#d1d4dc' },
+            grid: { vertLines: { color: '#0a0a0a' }, horzLines: { color: '#0a0a0a' } },
+            timeScale: { borderColor: '#1a1a1a', timeVisible: true }
+        });
         this.candleSeries = this.chart.addCandlestickSeries({ upColor: '#00ff41', downColor: '#ff3131' });
 
         const info = await fetch('https://api.binance.com/api/v3/exchangeInfo').then(r => r.json());
-        this.allPairs = info.symbols.filter(s => s.quoteAsset === 'USDT').map(s => s.symbol);
-        document.getElementById('pair-stats').innerText = `Pairs: ${this.allPairs.length}`;
-
-        this.startScanner();
-        this.loadChart('BTCUSDT');
+        this.pairs = info.symbols.filter(s => s.quoteAsset === 'USDT' && s.status === 'TRADING').map(s => s.symbol);
+        
+        this.loadPair('BTCUSDT');
+        this.run();
     },
 
-    async loadChart(s) {
-        const k = await fetch(`https://api.binance.com/api/v3/klines?symbol=${s}&interval=1h&limit=150`).then(r => r.json());
-        const data = k.map(d => ({ time: d[0]/1000, open: +d[1], high: +d[2], low: +d[3], close: +d[4] }));
-        this.candleSeries.setData(data);
+    async loadPair(s) {
+        const k = await fetch(`https://api.binance.com/api/v3/klines?symbol=${s}&interval=${this.currentTF}&limit=120`).then(r => r.json());
+        this.candleSeries.setData(k.map(d => ({ time: d[0]/1000, open: +d[1], high: +d[2], low: +d[3], close: +d[4] })));
         this.chart.timeScale().fitContent();
-        this.clearPatterns(); // تنظيف الشارت عند تغيير العملة
+        this.resetChart();
     },
 
-    clearPatterns() {
-        this.patternLines.forEach(l => this.chart.removeSeries(l));
-        this.patternLines = [];
-        this.candleSeries.setMarkers([]);
-    },
-
-    async startScanner() {
-        const batchSize = 20;
-        for (let i = 0; i < this.allPairs.length; i += batchSize) {
-            const batch = this.allPairs.slice(i, i + batchSize);
-            for (let s of batch) {
-                document.getElementById('current-scan').innerText = `Scanning ${s}...`;
-                await this.analyze(s);
-            }
-            await new Promise(r => setTimeout(r, 2000)); // استراحة لتجنب حظر الـ API
+    async run() {
+        if (this.isPaused) { setTimeout(() => this.run(), 1000); return; }
+        const batch = 12;
+        for (let i = 0; i < this.pairs.length; i += batch) {
+            if (this.isPaused) break;
+            document.getElementById('status').innerHTML = `فحص المجموعة <b style="color:var(--neon)">${i}</b>...`;
+            await Promise.allSettled(this.pairs.slice(i, i + batch).map(s => this.scan(s)));
+            await new Promise(r => setTimeout(r, 1500));
         }
-        this.startScanner();
+        this.run();
     },
 
-    async analyze(s) {
+    async scan(s) {
         try {
-            const k = await fetch(`https://api.binance.com/api/v3/klines?symbol=${s}&interval=1h&limit=80`).then(r => r.json());
+            const k = await fetch(`https://api.binance.com/api/v3/klines?symbol=${s}&interval=${this.currentTF}&limit=60`).then(r => r.json());
             const c = k.map(d => +d[4]);
-            
-            // منطق ZigZag مبسط لاكتشاف النقاط بدقة
             let pivots = [];
-            for(let i=5; i<c.length-5; i++) {
-                const isMax = c.slice(i-5, i+5).every(v => v <= c[i]);
-                const isMin = c.slice(i-5, i+5).every(v => v >= c[i]);
-                if(isMax || isMin) pivots.push({v: c[i], t: k[i][0]/1000});
+            for(let i=4; i<c.length-4; i++) {
+                if(c.slice(i-4, i+4).every(v => v <= c[i]) || c.slice(i-4, i+4).every(v => v >= c[i])) 
+                    pivots.push({v: c[i], t: k[i][0]/1000});
             }
-
             if(pivots.length < 5) return;
             const pts = pivots.slice(-5);
             const [X, A, B, C, D] = pts.map(p => p.v);
-            
-            // حساب النسب بدقة (Fibonacci Logic)
-            const xa = Math.abs(A-X), ab = Math.abs(B-A)/xa, ad = Math.abs(D-A)/xa;
-            let model = "";
 
-            if (this.is(ab, 0.618, 0.05)) model = "GARTLEY";
-            else if (this.is(ab, 0.382, 0.05)) model = "BAT";
-            else if (this.is(ab, 0.786, 0.05)) model = "BUTTERFLY";
-            else if (this.is(ad, 1.13, 0.1)) model = "SHARK";
+            if (D < C && D < A) {
+                const xa = Math.abs(A-X), ab = Math.abs(B-A)/xa, ad = Math.abs(D-A)/xa;
+                let m = "", cls = "", score = 0;
 
-            if (model && D < C) this.updateRadar(s, model, pts, ad);
+                if (this.is(ab, 0.618, 0.08)) { m = "GARTLEY"; cls = "bg-gartley"; score = 95 - (Math.abs(ad-0.786)*100); }
+                else if (this.is(ab, 0.44, 0.1)) { m = "BAT"; cls = "bg-bat"; score = 93 - (Math.abs(ad-0.886)*100); }
+                else if (this.is(ad, 1.27, 0.12)) { m = "BUTTERFLY"; cls = "bg-butterfly"; score = 90 - (Math.abs(ad-1.27)*100); }
+
+                if (m && score > 80) this.addToRadar(s, m, cls, pts, score);
+            }
         } catch(e){}
     },
 
     is(v, t, e) { return v >= t - e && v <= t + e; },
 
-    updateRadar(s, type, pts, ad) {
-        if(document.getElementById('c-'+s)) return;
-        const prob = Math.min(100, Math.floor(100 - (Math.abs(ad - 1.13)*100)));
-        
+    addToRadar(s, m, cls, pts, score) {
+        if(document.getElementById('sig-'+s)) return;
         const card = document.createElement('div');
-        card.id = 'c-'+s; card.className = 'sig-card';
-        card.innerHTML = `<div class="info"><b>${s}</b> <span class="probability">${prob}% ACC</span></div>
-                          <div style="font-size:0.7rem; margin-top:5px; color:#aaa;">${type} BULLISH DETECTED</div>`;
-        card.onclick = () => {
-            this.loadChart(s);
-            setTimeout(() => this.drawXABCD(pts), 500);
-        };
-        document.getElementById('radar-list').prepend(card);
+        card.id = 'sig-'+s;
+        card.className = `sig-card ${score > 90 ? 'high-score' : ''}`;
+        card.innerHTML = `
+            <div class="score-val">${score.toFixed(1)}%</div>
+            <div style="display:flex; justify-content:space-between; margin-top:5px;">
+                <b style="font-family:'Orbitron'">${s}</b>
+                <span style="font-size:0.6rem; color:#aaa">${this.currentTF.toUpperCase()}</span>
+            </div>
+            <div style="margin-top:10px;"><span class="badge ${cls}" style="font-family:'Orbitron'; font-size:0.65rem; padding:2px 5px; border-radius:3px;">${m}</span></div>
+        `;
+        card.onclick = () => { this.loadPair(s); setTimeout(() => this.drawPattern(pts), 400); };
+        
+        const list = document.getElementById('radar-list');
+        list.prepend(card);
+        this.sortRadar();
+        this.filterRadar();
+        // حذف تلقائي بعد 30 دقيقة كما اقترحت
+        setTimeout(() => { if(document.getElementById('sig-'+s)) document.getElementById('sig-'+s).remove(); }, 1800000);
     },
 
-    drawXABCD(pts) {
-        this.clearPatterns();
-        const labels = ['X', 'A', 'B', 'C', 'D'];
-        
-        for(let i=1; i<pts.length; i++) {
-            const line = this.chart.addLineSeries({ color: 'rgba(0, 255, 65, 0.6)', lineWidth: 2, lineStyle: 0 });
-            line.setData([{time: pts[i-1].t, value: pts[i-1].v}, {time: pts[i].t, value: pts[i].v}]);
-            this.patternLines.push(line);
-        }
+    sortRadar() {
+        const list = document.getElementById('radar-list');
+        [...list.children].sort((a,b) => parseFloat(b.innerText) - parseFloat(a.innerText)).forEach(c => list.appendChild(c));
+    },
+
+    drawPattern(pts) {
+        this.resetChart();
+        // رسم الأضلاع
+        const harmonicSeries = this.chart.addLineSeries({ color: 'rgba(0, 255, 65, 0.7)', lineWidth: 2 });
+        harmonicSeries.setData(pts.map(p => ({ time: p.t, value: p.v })));
+        this.activeSeries.push(harmonicSeries);
+
+        // حساب الأهداف (TP1, TP2, SL)
+        const dVal = pts[4].v;
+        const move = Math.abs(pts[3].v - dVal);
+        const targets = { tp1: dVal + move * 0.382, tp2: dVal + move * 0.618, sl: dVal * 0.965 };
+
+        // رسم خطوط الأهداف
+        this.drawTargetLine(targets.tp1, 'rgba(0, 255, 65, 0.4)', 'TP1');
+        this.drawTargetLine(targets.tp2, 'rgba(0, 255, 65, 0.6)', 'TP2');
+        this.drawTargetLine(targets.sl, 'rgba(255, 49, 49, 0.5)', 'SL');
 
         this.candleSeries.setMarkers(pts.map((p, i) => ({
-            time: p.t, position: 'aboveBar', color: '#fff', shape: 'arrowDown', text: labels[i]
+            time: p.t, position: 'aboveBar', color: '#fff', text: ['X','A','B','C','D'][i]
         })));
-    }
-};
+    },
 
-window.onload = () => LianaV5.init();
+    drawTargetLine(val, color, label) {
+        const line = this.chart.addLineSeries({ color: color, lineWidth: 2, lineStyle: 2, title: label });
+        const time = Math.floor(Date.now()/1000);
+        line.setData([{time: time - 86400, value: val}, {time: time + 86400, value: val}]);
+        this.activeSeries.push(line);
+    },
+
+    filterRadar() {
+        const val = document.getElementById('searchCoin').value.toUpperCase();
+        const models = Array.from(document.querySelectorAll('#model-filters input:checked')).map(i => i.value);
+        document.querySelectorAll('.sig-card').forEach(c => {
+            const match = c.innerText.includes(val) && models.some(m => c.innerText.includes(m));
+            c.style.display = match ? 'block' : 'none';
+        });
+    },
+
+    resetChart() { this.activeSeries.forEach(s => this.chart.removeSeries(s)); this.activeSeries = []; this.candleSeries.setMarkers([]); },
+    toggleScan() { this.isPaused = !this.isPaused; document.getElementById('pause-btn').innerText = this.isPaused ? 'RESUME' : 'PAUSE'; },
+    clearRadar() { document.getElementById('radar-list').innerHTML = ""; },
+    changeTF() { this.currentTF = document.getElementById('tf-select').value; this.loadPair('BTCUSDT'); }
+};
+window.onload = () => Sniper.init();
 </script>
 </body>
 </html>
