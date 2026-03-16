@@ -32,6 +32,7 @@
             background: var(--card);
             overflow-x: auto;
             border-bottom: 1px solid #1e2329;
+            scrollbar-width: none; /* إخفاء شريط التمرير */
         }
 
         .model-btn {
@@ -41,12 +42,15 @@
             border-radius: 12px;
             cursor: pointer;
             color: var(--text-dim);
-            transition: 0.3s;
+            transition: 0.3s ease;
             display: flex;
             align-items: center;
             gap: 8px;
-            min-width: 120px;
+            min-width: 130px;
+            white-space: nowrap;
         }
+
+        .model-btn:hover { background: #262c33; border-color: #3f4751; }
 
         .model-btn b { color: var(--accent); }
 
@@ -54,6 +58,7 @@
             background: rgba(255, 204, 0, 0.1);
             border-color: var(--accent);
             color: var(--accent);
+            box-shadow: 0 0 10px rgba(255, 204, 0, 0.1);
         }
 
         /* شريط البحث والرصد */
@@ -62,6 +67,7 @@
             display: flex;
             gap: 10px;
             background: #0b0e11;
+            border-bottom: 1px solid #1e2329;
         }
 
         input#coinSearch {
@@ -72,7 +78,10 @@
             padding: 12px;
             border-radius: 8px;
             outline: none;
+            transition: 0.3s;
         }
+
+        input#coinSearch:focus { border-color: var(--accent); background: #262c33; }
 
         .scan-btn {
             background: var(--accent);
@@ -82,7 +91,10 @@
             border-radius: 8px;
             font-weight: bold;
             cursor: pointer;
+            transition: 0.3s;
         }
+
+        .scan-btn:hover { background: #e6b800; transform: translateY(-1px); }
 
         /* منطقة النتائج */
         .pins-container {
@@ -91,23 +103,29 @@
             padding: 10px 15px;
             overflow-x: auto;
             background: #080a0c;
-            min-height: 90px;
+            min-height: 95px;
+            align-items: center;
         }
 
         .opportunity-card {
             background: var(--card);
             padding: 15px;
             border-radius: 12px;
-            min-width: 150px;
+            min-width: 155px;
             border-left: 4px solid var(--accent);
             cursor: pointer;
+            transition: 0.3s;
             animation: slideIn 0.3s ease;
+            position: relative;
         }
 
-        .opportunity-card:hover { background: #1c2127; }
+        .opportunity-card:hover { background: #1c2127; transform: translateY(-2px); }
+
+        .opportunity-card .badge { position: absolute; top: 5px; left: 5px; font-size: 10px; background: #333; padding: 2px 5px; border-radius: 4px; }
 
         /* الشارت */
-        .main-chart { background: #000; flex: 1; }
+        .main-chart { background: #000; flex: 1; position: relative; }
+        #loader { position: absolute; top:50%; left:50%; transform:translate(-50%, -50%); display: none; color: var(--accent); z-index: 10; font-weight: bold; }
 
         @keyframes slideIn {
             from { opacity: 0; transform: translateX(20px); }
@@ -119,41 +137,46 @@
 
 <div class="dashboard-header" id="modelSelectors">
     <button class="model-btn active" data-m="ALL" onclick="setFilter('ALL', this)">الكل 🌐</button>
-    <button class="model-btn" data-m="Cypher" onclick="setFilter('Cypher', this)">Cypher 🛡️ <b id="count-Cypher">0</b></button>
-    <button class="model-btn" data-m="Shark" onclick="setFilter('Shark', this)">Shark 🦈 <b id="count-Shark">0</b></button>
-    <button class="model-btn" data-m="Bat" onclick="setFilter('Bat', this)">Bat 🦇 <b id="count-Bat">0</b></button>
-    <button class="model-btn" data-m="Butterfly" onclick="setFilter('Butterfly', this)">Butterfly 🦋 <b id="count-Butterfly">0</b></button>
+    <button class="model-btn" data-m="Cypher" onclick="setFilter('Cypher', this)">Cypher 🛡️ <b id="count-Cypher">(0)</b></button>
+    <button class="model-btn" data-m="Shark" onclick="setFilter('Shark', this)">Shark 🦈 <b id="count-Shark">(0)</b></button>
+    <button class="model-btn" data-m="Bat" onclick="setFilter('Bat', this)">Bat 🦇 <b id="count-Bat">(0)</b></button>
+    <button class="model-btn" data-m="Butterfly" onclick="setFilter('Butterfly', this)">Butterfly 🦋 <b id="count-Butterfly">(0)</b></button>
 </div>
 
 <div class="search-bar">
     <input type="text" id="coinSearch" placeholder="بحث يدوي (BTC, SOL, PEPE...)" oninput="handleManualSearch()">
-    <button class="scan-btn">رصد 🎯</button>
+    <button class="scan-btn" onclick="handleManualSearch()">رصد 🎯</button>
 </div>
 
 <div class="pins-container" id="pinsList">
-    </div>
+    <div style="color: #444; font-size: 12px; padding: 10px;">بانتظار رصد نماذج Harmonic... 📡</div>
+</div>
 
-<div class="main-chart" id="tv_main_chart"></div>
+<div class="main-chart" id="tv_main_chart">
+    <div id="loader">جارِ تحميل الشارت...</div>
+</div>
 
 <script src="https://s3.tradingview.com/tv.js"></script>
 <script>
-    let memory = {}, currentFilter = 'ALL', tvWidget = null;
+    let memory = {}, currentFilter = 'ALL', tvWidget = null, ws = null;
+    const CONFIG = { ZZ_THRESHOLD: 0.012, MIN_VOLUME: 5000000, EMA_PERIOD: 200, TOLERANCE: 0.07 };
 
-    // محرك المسح المحسن (إصلاح أخطاء التسمية)
+    // محرك المسح المحسن (إصلاح أخطاء التسمية ومطابقة الأزرار)
     function scanHarmonic(p) {
         const X=p[0].price, A=p[1].price, B=p[2].price, C=p[3].price, D=p[4].price;
-        const rAB = Math.abs(B-A)/Math.abs(A-X), rXD = Math.abs(D-X)/Math.abs(A-X);
+        const XA=Math.abs(A-X), AB=Math.abs(B-A);
+        const rAB = AB/XA, rXD = Math.abs(D-X)/XA;
 
-        if(isWithin(rAB, 0.44, 0.06) && isWithin(rXD, 0.886, 0.05)) return {name:"Bat", color:"#ffcc00"};
-        if(isWithin(rAB, 0.5, 0.1) && C > Math.max(A, X) && isWithin(rXD, 0.786, 0.05)) return {name:"Cypher", color:"#ff6600"};
-        if(isWithin(rAB, 0.886, 0.08)) return {name:"Shark", color:"#00c2ff"};
+        if(isWithin(rAB, 0.44, 0.06) && isWithin(rXD, 0.886, 0.05)) return {name:"Bat", color:"#ffcc00", type:D<C?"Bullish":"Bearish"};
+        if(isWithin(rAB, 0.5, 0.1) && C > Math.max(A, X) && isWithin(rXD, 0.786, 0.05)) return {name:"Cypher", color:"#ff6600", type:D<C?"Bullish":"Bearish"};
+        if(isWithin(rAB, 0.886, 0.08)) return {name:"Shark", color:"#00c2ff", type:D<C?"Bullish":"Bearish"};
         
         return null;
     }
 
     function isWithin(val, target, tol) { return Math.abs(val - target) <= tol; }
 
-    // نظام الفلترة وتحديث الأزرار
+    // نظام الفلترة وتحديث الأزرار والعدادات
     function setFilter(model, btn) {
         currentFilter = model;
         document.querySelectorAll('.model-btn').forEach(b => b.classList.remove('active'));
@@ -166,16 +189,18 @@
         list.innerHTML = "";
         
         let counts = {Cypher:0, Shark:0, Bat:0, Butterfly:0};
+        let foundAny = false;
 
         for(let s in memory) {
             memory[s].patterns.forEach(p => {
                 if(counts[p.name] !== undefined) counts[p.name]++;
                 
                 if(currentFilter === 'ALL' || p.name === currentFilter) {
+                    foundAny = true;
                     const card = document.createElement("div");
                     card.className = "opportunity-card";
                     card.style.borderLeftColor = p.color || '#ffcc00';
-                    card.innerHTML = `<b>${s}</b><br><small>${p.name}</small>`;
+                    card.innerHTML = `<div class="badge">${p.type}</div><b>${s}</b><br><small style="color:${p.color}">${p.name}</small>`;
                     card.onclick = () => loadPair(s);
                     list.prepend(card);
                 }
@@ -185,23 +210,41 @@
         // تحديث العدادات في الأزرار
         for(let m in counts) {
             const el = document.getElementById(`count-${m}`);
-            if(el) el.innerText = counts[m];
+            if(el) el.innerText = `(${counts[m]})`;
         }
+
+        if(!foundAny) list.innerHTML = `<div style="color: #444; font-size: 12px; padding: 10px;">لا توجد نماذج ${currentFilter === 'ALL' ? '' : currentFilter} حالياً...</div>`;
     }
 
     function loadPair(symbol) {
         if(tvWidget && tvWidget.chart) {
-            tvWidget.chart().setSymbol("BINANCE:" + symbol);
+            document.getElementById('loader').style.display = 'block';
+            tvWidget.chart().setSymbol("BINANCE:" + symbol, '60', () => {
+                document.getElementById('loader').style.display = 'none';
+            });
         }
     }
 
+    function handleManualSearch() {
+        const s = document.getElementById("coinSearch").value.toUpperCase();
+        if(s.length > 2) {
+            const pair = s.includes('USDT') ? s : s+'USDT';
+            loadPair(pair);
+        }
+    }
+
+    // تهيئة الشارت والعدادات عند التحميل
     window.onload = () => {
         tvWidget = new TradingView.widget({
             autosize: true, symbol: "BINANCE:BTCUSDT", interval: "60",
-            theme: "dark", container_id: "tv_main_chart", style: "1"
+            theme: "dark", container_id: "tv_main_chart", style: "1",
+            hide_top_toolbar: true
         });
-        // ابدأ الـ WebSocket هنا لتغذية الـ memory
+        updateCounters(); // تهيئة العدادات عند الفتح
     };
+
+    // وظيفة وهمية للتجربة (يجب استبدالها بالـ WebSocket الحقيقي)
+    function updateCounters() { renderUI(); }
 </script>
 </body>
 </html>
