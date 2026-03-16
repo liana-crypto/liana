@@ -1,80 +1,85 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إلى حبيبتي أسماء 🌿</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Scheherazade New', 'Arial', sans-serif;
-            background: url('https://i.ibb.co/2N5vVhR/flowers-bg.jpg') no-repeat center center fixed;
-            background-size: cover;
-            color: #fff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            text-align: center;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إلى حبيبتي أسماء 🌹</title>
+<!-- إضافة خط عربي مميز من Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Scheherazade+New&display=swap" rel="stylesheet">
+<style>
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Scheherazade New', serif;
+    background: url('https://i.ibb.co/2N5vVhR/flowers-bg.jpg') no-repeat center center fixed;
+    background-size: cover;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+    overflow: hidden;
+}
 
-        .container {
-            background: rgba(0,0,0,0.6);
-            padding: 40px;
-            border-radius: 20px;
-            max-width: 700px;
-            box-shadow: 0 0 30px rgba(0,0,0,0.5);
-        }
+.container {
+    background: rgba(0,0,0,0.6);
+    padding: 40px;
+    border-radius: 20px;
+    max-width: 700px;
+    box-shadow: 0 0 30px rgba(0,0,0,0.5);
+}
 
-        h1 {
-            font-size: 2.5em;
-            margin-bottom: 20px;
-            color: #ffdd00;
-            text-shadow: 2px 2px 4px #000;
-        }
+h1 {
+    font-size: 3em;
+    margin-bottom: 20px;
+    color: #ffdd00;
+    text-shadow: 2px 2px 6px #000;
+    font-family: 'Scheherazade New', serif;
+}
 
-        p {
-            font-size: 1.3em;
-            line-height: 2em;
-            color: #f0f0f0;
-        }
+p {
+    font-size: 1.5em;
+    line-height: 2em;
+    color: #f0f0f0;
+    font-family: 'Scheherazade New', serif;
+}
 
-        /* ورود متساقطة */
-        .flower {
-            position: absolute;
-            width: 50px;
-            height: 50px;
-            background-image: url('https://i.ibb.co/7r9V4QJ/rose.png');
-            background-size: contain;
-            background-repeat: no-repeat;
-            animation: fall 12s linear infinite;
-        }
+/* ورود متساقطة */
+.flower {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    background-image: url('https://i.ibb.co/9rZJ1Ph/rose-png.png'); /* وردة شفافة PNG */
+    background-size: contain;
+    background-repeat: no-repeat;
+    animation: fall 12s linear infinite;
+}
 
-        @keyframes fall {
-            0% { transform: translateY(-100px) rotate(0deg); }
-            100% { transform: translateY(100vh) rotate(360deg); }
-        }
-    </style>
+@keyframes fall {
+    0% { transform: translateY(-100px) rotate(0deg); }
+    100% { transform: translateY(100vh) rotate(360deg); }
+}
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>إلى حبيبتي أسماء 🌿</h1>
-        <p>
-            أسماءُ يا نورَ العينِ ومهجةَ الفؤادِ،<br>
-            لكِ القلبُ يفيضُ حبّاً وودادِ،<br>
-            كم ليلٍ سهرتُ فيهِ على ذكراكِ،<br>
-            وزهرةُ عمري أنتِ بينَ عبادِ.<br>
-            أحبكِ حبّاً لا يزولُ معَ الأيامِ،<br>
-            ويظلّ العهدُ لكِ ما بقيتُ حيّاً في الأحلامِ.
-        </p>
-    </div>
+<div class="container">
+    <h1>إلى حبيبتي أسماء 🌹</h1>
+    <p>
+        أسماءُ يا نورَ العينِ ومهجةَ الفؤادِ،<br>
+        لكِ القلبُ يفيضُ حبّاً وودادِ،<br>
+        كم ليلٍ سهرتُ فيهِ على ذكراكِ،<br>
+        وزهرةُ عمري أنتِ بينَ عبادِ.<br>
+        أحبكِ حبّاً لا يزولُ معَ الأيامِ،<br>
+        ويظلّ العهدُ لكِ ما بقيتُ حيّاً في الأحلامِ.
+    </p>
+</div>
 
-    <!-- ورود متساقطة -->
-    <div class="flower" style="left:5%; animation-duration:10s;"></div>
-    <div class="flower" style="left:25%; animation-duration:12s;"></div>
-    <div class="flower" style="left:50%; animation-duration:11s;"></div>
-    <div class="flower" style="left:70%; animation-duration:13s;"></div>
-    <div class="flower" style="left:85%; animation-duration:9s;"></div>
+<!-- ورود متساقطة -->
+<div class="flower" style="left:5%; animation-duration:10s;"></div>
+<div class="flower" style="left:25%; animation-duration:12s;"></div>
+<div class="flower" style="left:50%; animation-duration:11s;"></div>
+<div class="flower" style="left:70%; animation-duration:13s;"></div>
+<div class="flower" style="left:85%; animation-duration:9s;"></div>
 </body>
 </html>
