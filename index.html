@@ -1,175 +1,185 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>NAYROVEX V18 | Elite Terminal</title>
-<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
-<style>
-:root {
-    --bg:#0b0e11; --panel:#161a1e; --accent:#00ff88; --gold:#ffcc00; --text:#d1d4dc; --hover:#2b2f36;
-}
-body{
-    margin:0; background:var(--bg); color:var(--text); font-family: sans-serif; overflow:hidden; display:flex; flex-direction:column; height:100vh;
-}
-/* Live Bar */
-#live-bar{
-    height:50px; background:var(--panel); display:flex; justify-content:space-between; align-items:center; padding:0 15px; border-bottom:1px solid #2b2f36; font-size:14px;
-}
-.v-tag{color:var(--accent); font-weight:bold;}
-.online{color:var(--accent); text-shadow: 0 0 8px var(--accent);}
-.offline{color:#ff3e3e;}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NAYROVEX V18 | Elite Terminal</title>
+    <style>
+        :root {
+            --bg: #0b0e11;
+            --panel: #161a1e;
+            --accent: #00ff88;
+            --gold: #ffcc00;
+            --text: #d1d4dc;
+            --border: #2b2f36;
+        }
 
-/* Main Grid */
-.main-grid{
-    display:grid; grid-template-columns:220px 1fr 280px; flex:1; overflow:hidden;
-}
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
 
-/* Mobile Adjustments */
-@media (max-width: 900px) {
-    .main-grid { grid-template-columns: 1fr; }
-    .side-panel, #prz-radar { display: none; }
-}
+        /* شريط الحالة العلوي */
+        header {
+            height: 50px;
+            background: var(--panel);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
 
-.side-panel{background:var(--panel); border-right:1px solid #2b2f36; overflow-y:auto;}
-#prz-radar{border-left:1px solid #2b2f36; padding:10px; background:var(--panel);}
-#chart-container{width:100%; height:100%; position: relative;}
+        .logo { font-weight: bold; letter-spacing: 1px; }
+        .logo span { color: var(--accent); }
+        .status-live { color: var(--accent); font-size: 13px; text-shadow: 0 0 5px var(--accent); }
 
-.prz-card{
-    background: #1e2329; border-right: 4px solid var(--gold); padding: 12px; margin-bottom: 12px; 
-    border-radius: 4px; font-size: 13px;
-}
+        /* الهيكل الرئيسي */
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            flex: 1;
+            overflow: hidden;
+        }
 
-.ticker-item{
-    padding:12px 10px; border-bottom:1px solid #2b2f36; display:flex; justify-content:space-between; 
-    cursor: pointer; transition: 0.2s;
-}
-.active-pair { background: var(--hover); border-left: 3px solid var(--accent); }
-</style>
+        /* تحسين العرض على الموبايل */
+        @media (max-width: 850px) {
+            .main-container { grid-template-columns: 1fr; }
+            .side-panel { display: none; }
+        }
+
+        #chart-area {
+            width: 100%;
+            height: 100%;
+            background: var(--bg);
+        }
+
+        /* لوحة الرادار الجانبية */
+        .side-panel {
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            overflow-y: auto;
+        }
+
+        .panel-title {
+            color: var(--gold);
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .signal-card {
+            background: linear-gradient(145deg, #1e2329, #161a1e);
+            border-right: 4px solid var(--gold);
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            animation: fadeIn 0.5s ease;
+        }
+
+        .signal-pair { font-weight: bold; font-size: 14px; margin-bottom: 5px; }
+        .signal-pattern { color: var(--accent); font-size: 12px; }
+        .signal-time { font-size: 10px; opacity: 0.5; margin-top: 8px; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #clock { font-family: monospace; font-size: 14px; }
+    </style>
 </head>
 <body>
 
-<header id="live-bar">
-    <div>NAYROVEX <span class="v-tag">V18 ELITE</span></div>
-    <div id="status" class="offline">● Connecting...</div>
-    <div id="clock">00:00:00</div>
-</header>
+    <header>
+        <div class="logo">NAYROVEX <span>V18 ELITE</span></div>
+        <div class="status-live">● نظام التحليل التوافقي نشط</div>
+        <div id="clock">00:00:00</div>
+    </header>
 
-<div class="main-grid">
-    <aside class="side-panel">
-        <div style="color:var(--gold); padding: 10px; font-weight: bold; border-bottom: 1px solid #2b2f36;">Market Watch</div>
-        <div id="ticker-list"></div>
-    </aside>
-
-    <div id="chart-container"></div>
-
-    <aside id="prz-radar">
-        <div style="color:var(--gold); margin-bottom:15px; font-weight: bold;">PRZ Radar 🎯</div>
-        <div id="signal-log">
-            <div style="text-align: center; opacity: 0.5; margin-top: 20px;">Scanning Market...</div>
+    <div class="main-container">
+        <div id="chart-area">
+            <div id="tv_chart_container" style="height: 100%;"></div>
         </div>
-    </aside>
-</div>
 
-<script>
-const pairs = ['btcusdt','ethusdt','solusdt','bnbusdt','adausdt','dogeusdt'];
-let currentPair = 'BTCUSDT';
-let chart, candleSeries;
+        <aside class="side-panel">
+            <div class="panel-title">🎯 رادار PRZ</div>
+            <div id="signals-list">
+                <div class="signal-card">
+                    <div class="signal-pair">BTCUSDT</div>
+                    <div class="signal-pattern">جاري البحث عن نماذج (Gartley, Bat)...</div>
+                    <div class="signal-time">الماسح المتقدم V18</div>
+                </div>
+            </div>
+        </aside>
+    </div>
 
-// 1. تهيئة الشارت
-function initChart() {
-    const container = document.getElementById('chart-container');
-    chart = LightweightCharts.createChart(container, {
-        layout: { backgroundColor: '#0b0e11', textColor: '#d1d4dc' },
-        grid: { vertLines: { color: '#1f2226' }, horzLines: { color: '#1f2226' } },
-        timeScale: { timeVisible: true }
-    });
-    candleSeries = chart.addCandlestickSeries({
-        upColor: '#00ff88', downColor: '#ff3e3e',
-        wickUpColor: '#00ff88', wickDownColor: '#ff3e3e',
-        borderVisible: false
-    });
-    loadHistory(currentPair);
-}
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <script type="text/javascript">
+        // 1. تشغيل شارت تريدنج فيو المطور
+        new TradingView.widget({
+            "autosize": true,
+            "symbol": "BINANCE:BTCUSDT",
+            "interval": "60",
+            "timezone": "Etc/UTC",
+            "theme": "dark",
+            "style": "1",
+            "locale": "ar",
+            "toolbar_bg": "#161a1e",
+            "enable_publishing": false,
+            "hide_side_toolbar": false, // تفعيل شريط الأدوات الجانبي للرسم
+            "allow_symbol_change": true,
+            "details": true,
+            "hotlist": true,
+            "calendar": true,
+            "show_popup_button": true,
+            "popup_width": "1000",
+            "popup_height": "650",
+            "container_id": "tv_chart_container"
+        });
 
-// 2. جلب التاريخ فوراً (لحل مشكلة الشاشة البيضاء)
-function loadHistory(symbol) {
-    fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol.toUpperCase()}&interval=1h&limit=100`)
-        .then(res => res.json())
-        .then(data => {
-            const formatted = data.map(d => ({
-                time: d[0] / 1000,
-                open: parseFloat(d[1]),
-                high: parseFloat(d[2]),
-                low: parseFloat(d[3]),
-                close: parseFloat(d[4])
-            }));
-            candleSeries.setData(formatted);
-            startEngine();
-        })
-        .catch(e => console.error("History Load Error"));
-}
+        // 2. تحديث الوقت
+        setInterval(() => {
+            document.getElementById('clock').innerText = new Date().toLocaleTimeString('ar-EG');
+        }, 1000);
 
-// 3. محرك WebSocket الحي
-function startEngine() {
-    const streams = pairs.map(p => `${p}@kline_1h`).join('/');
-    const socket = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
-
-    socket.onopen = () => {
-        const s = document.getElementById('status');
-        s.innerText = '● Live'; s.className = 'online';
-    };
-
-    socket.onmessage = (event) => {
-        const msg = JSON.parse(event.data);
-        const k = msg.data.k;
-        const symbol = msg.data.s;
-
-        if (symbol === currentPair) {
-            candleSeries.update({
-                time: k.t / 1000,
-                open: parseFloat(k.o),
-                high: parseFloat(k.h),
-                low: parseFloat(k.l),
-                close: parseFloat(k.c)
-            });
+        // 3. إضافة تنبيهات وهمية (Simulation) لتجربة الواجهة
+        function addDemoSignal() {
+            const list = document.getElementById('signals-list');
+            const pairs = ['ETHUSDT', 'SOLUSDT', 'BNBUSDT'];
+            const patterns = ['Bullish Bat', 'Bearish Gartley', 'Butterfly'];
+            
+            const card = document.createElement('div');
+            card.className = 'signal-card';
+            card.innerHTML = `
+                <div class="signal-pair">${pairs[Math.floor(Math.random()*pairs.length)]}</div>
+                <div class="signal-pattern">${patterns[Math.floor(Math.random()*patterns.length)]} Detected</div>
+                <div class="signal-time">${new Date().toLocaleTimeString('ar-EG')}</div>
+            `;
+            if (list.children.length > 5) list.lastChild.remove();
+            list.prepend(card);
         }
-        updateList(symbol, k.c);
-        document.getElementById('clock').innerText = new Date().toLocaleTimeString();
-        if(k.x) runDeepScan(symbol, k.c);
-    };
-}
 
-// 4. تحديث قائمة السوق
-function updateList(symbol, price) {
-    let el = document.getElementById(`t-${symbol.toLowerCase()}`);
-    if (!el) {
-        el = document.createElement('div');
-        el.id = `t-${symbol.toLowerCase()}`;
-        el.className = 'ticker-item';
-        el.onclick = () => {
-            currentPair = symbol;
-            loadHistory(symbol);
-            document.querySelectorAll('.ticker-item').forEach(i => i.classList.remove('active-pair'));
-            el.classList.add('active-pair');
-        };
-        document.getElementById('ticker-list').appendChild(el);
-    }
-    el.innerHTML = `<span>${symbol}</span> <span>${parseFloat(price).toFixed(2)}</span>`;
-}
-
-// 5. محاكي الرادار
-function runDeepScan(symbol, price) {
-    if (Math.random() > 0.95) {
-        const log = document.getElementById('signal-log');
-        const card = document.createElement('div');
-        card.className = 'prz-card';
-        card.innerHTML = `<strong>BAT PATTERN Found</strong><br>Pair: ${symbol}<br>PRZ: ${parseFloat(price).toFixed(2)}`;
-        log.prepend(card);
-    }
-}
-
-initChart();
-</script>
+        // إرسال إشارة تجريبية كل دقيقة
+        setTimeout(() => {
+            addDemoSignal();
+            setInterval(addDemoSignal, 60000);
+        }, 5000);
+    </script>
 </body>
 </html>
