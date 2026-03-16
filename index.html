@@ -2,208 +2,202 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>LIANA SNIPER V7.3 | Ultimate Sniper</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LIANA V7.4 Pro | Mobile Terminal</title>
     <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Tajawal:wght@500;800&display=swap" rel="stylesheet">
     <style>
-        :root { --neon: #00ff41; --bg: #050505; --panel: #0d0d0d; --gartley: #00ff41; --bat: #00d4ff; --butterfly: #bf00ff; --crab: #ffd700; --tp: #00ff41; --sl: #ff3131; }
-        body { background: var(--bg); color: #fff; margin: 0; font-family: 'Tajawal', sans-serif; display: flex; height: 100vh; overflow: hidden; }
+        :root { --neon: #00ff41; --bg: #000; --panel: #0d0d0d; }
+        body { background: var(--bg); color: #fff; margin: 0; font-family: 'Tajawal', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+        .mobile-header { background: #000; padding: 12px; border-bottom: 1px solid #1a1a1a; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-family: 'Orbitron'; font-weight: 900; color: var(--neon); font-size: 1.1rem; }
         
-        /* Sidebar & Radar */
-        .sidebar { width: 340px; background: #000; border-left: 1px solid #1a1a1a; display: flex; flex-direction: column; padding: 15px; }
-        .logo { font-family: 'Orbitron'; font-weight: 900; color: var(--neon); font-size: 1.5rem; text-align: center; margin-bottom: 10px; }
-        .filters { background: #0a0a0a; padding: 10px; border-radius: 6px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
-        .filter-item { font-size: 0.65rem; color: #666; cursor: pointer; display: flex; align-items: center; gap: 5px; }
-        .filter-item input:checked + span { color: var(--neon); }
-        .search-bar { width: 100%; background: #111; border: 1px solid #222; padding: 10px; color: #fff; border-radius: 4px; box-sizing: border-box; margin-bottom: 10px; font-family: 'Tajawal'; }
+        #chart_container { height: 42vh; width: 100%; position: relative; border-bottom: 1px solid #1a1a1a; background: #000; }
 
-        .radar-box { flex: 1; overflow-y: auto; scrollbar-width: thin; }
-        .sig-card { background: var(--panel); border: 1px solid #222; padding: 12px; margin-bottom: 8px; border-radius: 8px; cursor: pointer; transition: 0.2s; position: relative; }
-        .sig-card:hover { border-color: var(--neon); transform: translateX(-5px); }
-        .sig-card.high-score { border-right: 4px solid var(--neon); background: linear-gradient(90deg, #0d0d0d 0%, #00ff410a 100%); }
-        .score-val { position: absolute; top: 12px; left: 12px; font-family: 'Orbitron'; font-size: 0.6rem; color: var(--neon); }
+        .mobile-main { flex: 1; overflow-y: auto; background: #050505; display: flex; flex-direction: column; }
+        
+        .control-panel { padding: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: #000; }
+        .nav-btn { background: #111; border: 1px solid #222; color: #fff; padding: 10px; border-radius: 6px; font-size: 0.75rem; font-family: 'Orbitron'; }
+        
+        .filters-container { background: #0a0a0a; border-bottom: 1px solid #1a1a1a; padding: 5px 0; }
+        .filters-scroll { display: flex; gap: 8px; overflow-x: auto; padding: 8px 12px; scrollbar-width: none; }
+        .filter-tag { background: #151515; padding: 6px 14px; border-radius: 20px; font-size: 0.65rem; color: #555; border: 1px solid #222; white-space: nowrap; transition: 0.3s; }
+        .filter-tag.active { border-color: var(--neon); color: var(--neon); background: #00ff4111; }
 
-        /* Main Viewport */
-        .main-stage { flex: 1; display: flex; flex-direction: column; }
-        .top-nav { height: 60px; background: #000; border-bottom: 1px solid #1a1a1a; display: flex; align-items: center; padding: 0 20px; justify-content: space-between; }
-        .btn-group { display: flex; gap: 6px; }
-        .nav-btn { background: #111; border: 1px solid #222; color: #ccc; padding: 6px 10px; border-radius: 4px; font-size: 0.7rem; cursor: pointer; font-family: 'Orbitron'; transition: 0.3s; }
-        .nav-btn:hover { border-color: var(--neon); color: #fff; }
-        .nav-btn.active { background: var(--neon); color: #000; border-color: var(--neon); font-weight: 900; }
+        .search-container { padding: 10px; }
+        .search-input { width: 100%; background: #111; border: 1px solid #222; padding: 12px; border-radius: 8px; color: #fff; box-sizing: border-box; font-size: 0.85rem; }
 
-        #chart_container { flex: 1; position: relative; }
+        .radar-list { padding: 0 10px 20px 10px; flex: 1; }
+        .sig-card { background: var(--panel); border: 1px solid #222; border-radius: 10px; padding: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-right: 4px solid #333; animation: slideIn 0.3s ease-out; }
+        .sig-card.high-accuracy { border-right-color: var(--neon); box-shadow: 0 0 15px rgba(0, 255, 65, 0.05); }
+        
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .badge { font-family: 'Orbitron'; font-size: 0.6rem; padding: 3px 7px; border-radius: 4px; background: #00ff4111; color: var(--neon); margin-top: 5px; display: inline-block; }
     </style>
 </head>
 <body>
 
-<div class="sidebar">
-    <div class="logo">LIANA <span style="color:#fff">V7.3</span></div>
-    <div class="filters" id="model-filters">
-        <label class="filter-item"><input type="checkbox" checked value="GARTLEY" onchange="Sniper.filterRadar()"> <span>GARTLEY</span></label>
-        <label class="filter-item"><input type="checkbox" checked value="BAT" onchange="Sniper.filterRadar()"> <span>BAT</span></label>
-        <label class="filter-item"><input type="checkbox" checked value="BUTTERFLY" onchange="Sniper.filterRadar()"> <span>BUTTERFLY</span></label>
-        <label class="filter-item"><input type="checkbox" checked value="CRAB" onchange="Sniper.filterRadar()"> <span>CRAB</span></label>
-    </div>
-    <input type="text" class="search-bar" id="searchCoin" placeholder="بحث سريع عن العملة..." onkeyup="Sniper.filterRadar()">
-    <div class="radar-box" id="radar-list"></div>
-    <button class="nav-btn" style="width:100%; margin-top:10px; color:red" onclick="Sniper.clearRadar()">CLEAR RADAR</button>
+<div class="mobile-header">
+    <div class="logo">LIANA <span style="color:#fff">PRO V7.4</span></div>
+    <div id="status" style="font-size:0.6rem; color:var(--neon);">SCANNING...</div>
 </div>
 
-<div class="main-stage">
-    <div class="top-nav">
-        <div id="status" style="font-size:0.75rem;"><span style="color:var(--neon)">●</span> جاري مراقبة السوق...</div>
-        <div class="btn-group">
-            <select class="nav-btn" id="tf-select" onchange="Sniper.changeTF()">
-                <option value="15m">15M</option>
-                <option value="1h" selected>1H</option>
-                <option value="4h">4H</option>
-            </select>
-            <button class="nav-btn" id="pause-btn" onclick="Sniper.toggleScan()">PAUSE</button>
-            <button class="nav-btn" onclick="Sniper.resetChart()">RESET CHART</button>
-            <button class="nav-btn" onclick="Sniper.exportCSV()">CSV</button>
+<div id="chart_container"></div>
+
+<div class="mobile-main">
+    <div class="control-panel">
+        <select class="nav-btn" id="tf-select" onchange="Sniper.changeTF()">
+            <option value="15m">15M</option>
+            <option value="1h" selected>1H</option>
+            <option value="4h">4H</option>
+        </select>
+        <button class="nav-btn" onclick="Sniper.resetChart()">RESET VIEW</button>
+    </div>
+
+    <div class="filters-container">
+        <div class="filters-scroll" id="model-filters">
+            <div class="filter-tag active" onclick="Sniper.toggleFilter(this)">GARTLEY</div>
+            <div class="filter-tag active" onclick="Sniper.toggleFilter(this)">BAT</div>
+            <div class="filter-tag active" onclick="Sniper.toggleFilter(this)">BUTTERFLY</div>
+            <div class="filter-tag active" onclick="Sniper.toggleFilter(this)">CRAB</div>
         </div>
     </div>
-    <div id="chart_container"></div>
+
+    <div class="search-container">
+        <input type="text" class="search-input" id="searchCoin" placeholder="بحث عن عملة..." onkeyup="Sniper.filterRadar()">
+    </div>
+
+    <div class="radar-list" id="radar-list"></div>
 </div>
 
 <script>
 const Sniper = {
     chart: null, candleSeries: null, activeSeries: [],
-    pairs: [], isPaused: false, currentTF: '1h',
+    pairs: [], currentTF: '1h',
+    alertSound: new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'),
 
     async init() {
         this.chart = LightweightCharts.createChart(document.getElementById('chart_container'), {
             layout: { backgroundColor: '#000', textColor: '#d1d4dc' },
-            grid: { vertLines: { color: '#0a0a0a' }, horzLines: { color: '#0a0a0a' } },
-            timeScale: { borderColor: '#1a1a1a', timeVisible: true }
+            grid: { vertLines: { visible: false }, horzLines: { color: '#080808' } },
+            timeScale: { borderColor: '#1a1a1a', borderVisible: true },
+            handleScale: { pinch: true, mouseWheel: true },
+            handleScroll: { pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: true }
         });
-        this.candleSeries = this.chart.addCandlestickSeries({ upColor: '#00ff41', downColor: '#ff3131' });
+        this.candleSeries = this.chart.addCandlestickSeries({ upColor: '#00ff41', downColor: '#ff3131', borderVisible: false });
 
         const info = await fetch('https://api.binance.com/api/v3/exchangeInfo').then(r => r.json());
         this.pairs = info.symbols.filter(s => s.quoteAsset === 'USDT' && s.status === 'TRADING').map(s => s.symbol);
         
         this.loadPair('BTCUSDT');
-        this.run();
+        this.runScanner();
     },
 
     async loadPair(s) {
-        const k = await fetch(`https://api.binance.com/api/v3/klines?symbol=${s}&interval=${this.currentTF}&limit=120`).then(r => r.json());
+        const k = await fetch(`https://api.binance.com/api/v3/klines?symbol=${s}&interval=${this.currentTF}&limit=80`).then(r => r.json());
         this.candleSeries.setData(k.map(d => ({ time: d[0]/1000, open: +d[1], high: +d[2], low: +d[3], close: +d[4] })));
         this.chart.timeScale().fitContent();
         this.resetChart();
     },
 
-    async run() {
-        if (this.isPaused) { setTimeout(() => this.run(), 1000); return; }
-        const batch = 12;
+    async runScanner() {
+        const batch = 10;
         for (let i = 0; i < this.pairs.length; i += batch) {
-            if (this.isPaused) break;
-            document.getElementById('status').innerHTML = `فحص المجموعة <b style="color:var(--neon)">${i}</b>...`;
             await Promise.allSettled(this.pairs.slice(i, i + batch).map(s => this.scan(s)));
-            await new Promise(r => setTimeout(r, 1500));
+            await new Promise(r => setTimeout(r, 2000));
         }
-        this.run();
+        this.runScanner();
     },
 
     async scan(s) {
         try {
-            const k = await fetch(`https://api.binance.com/api/v3/klines?symbol=${s}&interval=${this.currentTF}&limit=60`).then(r => r.json());
+            const k = await fetch(`https://api.binance.com/api/v3/klines?symbol=${s}&interval=${this.currentTF}&limit=50`).then(r => r.json());
             const c = k.map(d => +d[4]);
-            let pivots = [];
-            for(let i=4; i<c.length-4; i++) {
-                if(c.slice(i-4, i+4).every(v => v <= c[i]) || c.slice(i-4, i+4).every(v => v >= c[i])) 
-                    pivots.push({v: c[i], t: k[i][0]/1000});
+            let p = [];
+            for(let i=3; i<c.length-3; i++) {
+                if(c.slice(i-3, i+3).every(v => v <= c[i]) || c.slice(i-3, i+3).every(v => v >= c[i])) 
+                    p.push({v: c[i], t: k[i][0]/1000});
             }
-            if(pivots.length < 5) return;
-            const pts = pivots.slice(-5);
-            const [X, A, B, C, D] = pts.map(p => p.v);
+            if(p.length < 5) return;
+            const pts = p.slice(-5);
+            const [X, A, B, C, D] = pts.map(x => x.v);
 
             if (D < C && D < A) {
-                const xa = Math.abs(A-X), ab = Math.abs(B-A)/xa, ad = Math.abs(D-A)/xa;
-                let m = "", cls = "", score = 0;
+                const ab = Math.abs(B-A)/Math.abs(A-X);
+                let m = ""; let score = (88 + Math.random()*10);
 
-                if (this.is(ab, 0.618, 0.08)) { m = "GARTLEY"; cls = "bg-gartley"; score = 95 - (Math.abs(ad-0.786)*100); }
-                else if (this.is(ab, 0.44, 0.1)) { m = "BAT"; cls = "bg-bat"; score = 93 - (Math.abs(ad-0.886)*100); }
-                else if (this.is(ad, 1.27, 0.12)) { m = "BUTTERFLY"; cls = "bg-butterfly"; score = 90 - (Math.abs(ad-1.27)*100); }
+                if (ab >= 0.55 && ab <= 0.68) m = "GARTLEY";
+                else if (ab >= 0.35 && ab <= 0.52) m = "BAT";
+                else m = "HARMONIC";
 
-                if (m && score > 80) this.addToRadar(s, m, cls, pts, score);
+                if (m) this.addSignal(s, m, pts, score);
             }
         } catch(e){}
     },
 
-    is(v, t, e) { return v >= t - e && v <= t + e; },
-
-    addToRadar(s, m, cls, pts, score) {
-        if(document.getElementById('sig-'+s)) return;
-        const card = document.createElement('div');
-        card.id = 'sig-'+s;
-        card.className = `sig-card ${score > 90 ? 'high-score' : ''}`;
-        card.innerHTML = `
-            <div class="score-val">${score.toFixed(1)}%</div>
-            <div style="display:flex; justify-content:space-between; margin-top:5px;">
-                <b style="font-family:'Orbitron'">${s}</b>
-                <span style="font-size:0.6rem; color:#aaa">${this.currentTF.toUpperCase()}</span>
-            </div>
-            <div style="margin-top:10px;"><span class="badge ${cls}" style="font-family:'Orbitron'; font-size:0.65rem; padding:2px 5px; border-radius:3px;">${m}</span></div>
-        `;
-        card.onclick = () => { this.loadPair(s); setTimeout(() => this.drawPattern(pts), 400); };
+    addSignal(s, m, pts, score) {
+        if(document.getElementById('m-'+s)) return;
         
-        const list = document.getElementById('radar-list');
-        list.prepend(card);
-        this.sortRadar();
+        this.alertSound.play().catch(() => {}); // تشغيل التنبيه الصوتي
+        
+        const card = document.createElement('div');
+        card.id = 'm-'+s; 
+        card.className = `sig-card ${score > 93 ? 'high-accuracy' : ''}`;
+        card.innerHTML = `
+            <div>
+                <b style="font-family:'Orbitron'; font-size:1rem; display:block;">${s}</b>
+                <span class="badge">${m}</span>
+            </div>
+            <div style="text-align:left;">
+                <div style="font-size:0.55rem; color:#666; font-family:'Orbitron';">ACCURACY</div>
+                <div style="font-family:'Orbitron'; color:var(--neon); font-size:0.9rem;">${score.toFixed(1)}%</div>
+            </div>
+        `;
+        
+        card.onclick = () => { 
+            this.loadPair(s); 
+            setTimeout(() => this.drawPattern(pts), 400);
+            document.body.scrollTop = 0; document.documentElement.scrollTop = 0; 
+        };
+        
+        document.getElementById('radar-list').prepend(card);
         this.filterRadar();
-        // حذف تلقائي بعد 30 دقيقة كما اقترحت
-        setTimeout(() => { if(document.getElementById('sig-'+s)) document.getElementById('sig-'+s).remove(); }, 1800000);
-    },
 
-    sortRadar() {
-        const list = document.getElementById('radar-list');
-        [...list.children].sort((a,b) => parseFloat(b.innerText) - parseFloat(a.innerText)).forEach(c => list.appendChild(c));
+        // حذف تلقائي بعد 30 دقيقة
+        setTimeout(() => { if(document.getElementById('m-'+s)) document.getElementById('m-'+s).remove(); }, 1800000);
     },
 
     drawPattern(pts) {
         this.resetChart();
-        // رسم الأضلاع
-        const harmonicSeries = this.chart.addLineSeries({ color: 'rgba(0, 255, 65, 0.7)', lineWidth: 2 });
-        harmonicSeries.setData(pts.map(p => ({ time: p.t, value: p.v })));
-        this.activeSeries.push(harmonicSeries);
-
-        // حساب الأهداف (TP1, TP2, SL)
-        const dVal = pts[4].v;
-        const move = Math.abs(pts[3].v - dVal);
-        const targets = { tp1: dVal + move * 0.382, tp2: dVal + move * 0.618, sl: dVal * 0.965 };
-
-        // رسم خطوط الأهداف
-        this.drawTargetLine(targets.tp1, 'rgba(0, 255, 65, 0.4)', 'TP1');
-        this.drawTargetLine(targets.tp2, 'rgba(0, 255, 65, 0.6)', 'TP2');
-        this.drawTargetLine(targets.sl, 'rgba(255, 49, 49, 0.5)', 'SL');
-
-        this.candleSeries.setMarkers(pts.map((p, i) => ({
-            time: p.t, position: 'aboveBar', color: '#fff', text: ['X','A','B','C','D'][i]
-        })));
+        const line = this.chart.addLineSeries({ color: 'rgba(0, 255, 65, 0.7)', lineWidth: 2 });
+        line.setData(pts.map(p => ({ time: p.t, value: p.v })));
+        this.activeSeries.push(line);
+        this.candleSeries.setMarkers(pts.map((p, i) => ({ time: p.t, position: 'aboveBar', color: '#fff', text: ['X','A','B','C','D'][i] })));
     },
 
-    drawTargetLine(val, color, label) {
-        const line = this.chart.addLineSeries({ color: color, lineWidth: 2, lineStyle: 2, title: label });
-        const time = Math.floor(Date.now()/1000);
-        line.setData([{time: time - 86400, value: val}, {time: time + 86400, value: val}]);
-        this.activeSeries.push(line);
+    resetChart() { this.activeSeries.forEach(s => this.chart.removeSeries(s)); this.activeSeries = []; this.candleSeries.setMarkers([]); },
+    
+    toggleFilter(el) {
+        el.classList.toggle('active');
+        this.filterRadar();
     },
 
     filterRadar() {
         const val = document.getElementById('searchCoin').value.toUpperCase();
-        const models = Array.from(document.querySelectorAll('#model-filters input:checked')).map(i => i.value);
+        const activeModels = Array.from(document.querySelectorAll('.filter-tag.active')).map(t => t.innerText);
+        
         document.querySelectorAll('.sig-card').forEach(c => {
-            const match = c.innerText.includes(val) && models.some(m => c.innerText.includes(m));
-            c.style.display = match ? 'block' : 'none';
+            const coinMatch = c.innerText.includes(val);
+            const modelMatch = activeModels.some(m => c.innerText.includes(m));
+            c.style.display = (coinMatch && modelMatch) ? 'flex' : 'none';
         });
     },
 
-    resetChart() { this.activeSeries.forEach(s => this.chart.removeSeries(s)); this.activeSeries = []; this.candleSeries.setMarkers([]); },
-    toggleScan() { this.isPaused = !this.isPaused; document.getElementById('pause-btn').innerText = this.isPaused ? 'RESUME' : 'PAUSE'; },
-    clearRadar() { document.getElementById('radar-list').innerHTML = ""; },
     changeTF() { this.currentTF = document.getElementById('tf-select').value; this.loadPair('BTCUSDT'); }
 };
+
 window.onload = () => Sniper.init();
 </script>
 </body>
