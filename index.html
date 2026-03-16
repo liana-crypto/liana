@@ -2,249 +2,139 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>NAYROVEX V27 | Elite Dashboard</title>
+    <title>NAYROVEX V28 | Elite Terminal</title>
     <style>
         :root {
-            --bg: #080a0c;
-            --card: #11151a;
-            --accent: #ffcc00;
-            --green: #00ff88;
-            --red: #ff3e3e;
-            --text-main: #ffffff;
-            --text-dim: #848e9c;
+            --bg: #080a0c; --card: #11151a; --accent: #ffcc00;
+            --green: #00ff88; --red: #ff3e3e; --text: #ffffff; --dim: #848e9c;
         }
-
-        body {
-            margin: 0;
-            font-family: 'Inter', 'Segoe UI', sans-serif;
-            background: var(--bg);
-            color: var(--text-main);
-            display: grid;
-            grid-template-rows: auto auto 1fr auto;
-            height: 100vh;
-        }
-
-        /* شريط النماذج العلوي - نمط Dashboard */
-        .dashboard-header {
-            display: flex;
-            gap: 12px;
-            padding: 15px;
-            background: var(--card);
-            overflow-x: auto;
-            border-bottom: 1px solid #1e2329;
-            scrollbar-width: none; /* إخفاء شريط التمرير */
-        }
-
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        
+        /* التصميم المطابق للصورة */
+        .header { display: flex; gap: 10px; padding: 15px; background: var(--card); border-bottom: 1px solid #1e2329; overflow-x: auto; scrollbar-width: none; }
         .model-btn {
-            background: #1e2329;
-            border: 1px solid #2b3139;
-            padding: 10px 20px;
-            border-radius: 12px;
-            cursor: pointer;
-            color: var(--text-dim);
-            transition: 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            min-width: 130px;
-            white-space: nowrap;
+            background: #1e2329; border: 1px solid #2b3139; padding: 12px 20px; border-radius: 12px;
+            color: var(--dim); cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 8px; min-width: 140px;
         }
+        .model-btn.active { background: rgba(255, 204, 0, 0.1); border-color: var(--accent); color: var(--accent); }
+        .model-btn b { color: var(--accent); font-size: 14px; }
 
-        .model-btn:hover { background: #262c33; border-color: #3f4751; }
+        .search-area { padding: 10px 15px; display: flex; gap: 10px; background: #0b0e11; border-bottom: 1px solid #1e2329; }
+        .search-input { flex: 1; background: #1e2329; border: 1px solid #2b3139; color: white; padding: 12px; border-radius: 10px; outline: none; }
+        .status-tag { background: var(--accent); color: #000; padding: 10px 20px; border-radius: 10px; font-weight: bold; font-size: 13px; }
 
-        .model-btn b { color: var(--accent); }
-
-        .model-btn.active {
-            background: rgba(255, 204, 0, 0.1);
-            border-color: var(--accent);
-            color: var(--accent);
-            box-shadow: 0 0 10px rgba(255, 204, 0, 0.1);
+        .pins-list { display: flex; gap: 12px; padding: 12px 15px; overflow-x: auto; background: var(--bg); min-height: 100px; align-items: center; }
+        .op-card {
+            background: var(--card); padding: 15px; border-radius: 12px; min-width: 160px;
+            border-left: 4px solid var(--accent); cursor: pointer; animation: fadeIn 0.4s ease;
         }
+        .op-card:hover { transform: translateY(-3px); background: #1c2127; }
 
-        /* شريط البحث والرصد */
-        .search-bar {
-            padding: 10px 15px;
-            display: flex;
-            gap: 10px;
-            background: #0b0e11;
-            border-bottom: 1px solid #1e2329;
-        }
+        .chart-frame { flex: 1; background: #000; position: relative; }
+        .live-price { position: absolute; top: 20px; right: 20px; z-index: 10; font-size: 32px; font-weight: bold; color: var(--green); text-shadow: 0 0 20px rgba(0,255,136,0.3); }
 
-        input#coinSearch {
-            flex: 1;
-            background: #1e2329;
-            border: 1px solid #2b3139;
-            color: white;
-            padding: 12px;
-            border-radius: 8px;
-            outline: none;
-            transition: 0.3s;
-        }
-
-        input#coinSearch:focus { border-color: var(--accent); background: #262c33; }
-
-        .scan-btn {
-            background: var(--accent);
-            color: #000;
-            border: none;
-            padding: 0 25px;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .scan-btn:hover { background: #e6b800; transform: translateY(-1px); }
-
-        /* منطقة النتائج */
-        .pins-container {
-            display: flex;
-            gap: 12px;
-            padding: 10px 15px;
-            overflow-x: auto;
-            background: #080a0c;
-            min-height: 95px;
-            align-items: center;
-        }
-
-        .opportunity-card {
-            background: var(--card);
-            padding: 15px;
-            border-radius: 12px;
-            min-width: 155px;
-            border-left: 4px solid var(--accent);
-            cursor: pointer;
-            transition: 0.3s;
-            animation: slideIn 0.3s ease;
-            position: relative;
-        }
-
-        .opportunity-card:hover { background: #1c2127; transform: translateY(-2px); }
-
-        .opportunity-card .badge { position: absolute; top: 5px; left: 5px; font-size: 10px; background: #333; padding: 2px 5px; border-radius: 4px; }
-
-        /* الشارت */
-        .main-chart { background: #000; flex: 1; position: relative; }
-        #loader { position: absolute; top:50%; left:50%; transform:translate(-50%, -50%); display: none; color: var(--accent); z-index: 10; font-weight: bold; }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(20px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
     </style>
 </head>
 <body>
 
-<div class="dashboard-header" id="modelSelectors">
-    <button class="model-btn active" data-m="ALL" onclick="setFilter('ALL', this)">الكل 🌐</button>
-    <button class="model-btn" data-m="Cypher" onclick="setFilter('Cypher', this)">Cypher 🛡️ <b id="count-Cypher">(0)</b></button>
-    <button class="model-btn" data-m="Shark" onclick="setFilter('Shark', this)">Shark 🦈 <b id="count-Shark">(0)</b></button>
-    <button class="model-btn" data-m="Bat" onclick="setFilter('Bat', this)">Bat 🦇 <b id="count-Bat">(0)</b></button>
-    <button class="model-btn" data-m="Butterfly" onclick="setFilter('Butterfly', this)">Butterfly 🦋 <b id="count-Butterfly">(0)</b></button>
+<div class="header">
+    <button class="model-btn active" onclick="setFilter('ALL', this)">الكل 🌐</button>
+    <button class="model-btn" onclick="setFilter('Cypher', this)">Cypher 🛡️ <b id="c-Cypher">(0)</b></button>
+    <button class="model-btn" onclick="setFilter('Shark', this)">Shark 🦈 <b id="c-Shark">(0)</b></button>
+    <button class="model-btn" onclick="setFilter('Bat', this)">Bat 🦇 <b id="c-Bat">(0)</b></button>
+    <button class="model-btn" onclick="setFilter('Butterfly', this)">Butterfly 🦋 <b id="c-Butterfly">(0)</b></button>
 </div>
 
-<div class="search-bar">
-    <input type="text" id="coinSearch" placeholder="بحث يدوي (BTC, SOL, PEPE...)" oninput="handleManualSearch()">
-    <button class="scan-btn" onclick="handleManualSearch()">رصد 🎯</button>
+<div class="search-area">
+    <div class="status-tag">رصد 🎯</div>
+    <input type="text" class="search-input" id="sc" placeholder="بحث يدوي (BTC, SOL, PEPE...)" oninput="search()">
 </div>
 
-<div class="pins-container" id="pinsList">
-    <div style="color: #444; font-size: 12px; padding: 10px;">بانتظار رصد نماذج Harmonic... 📡</div>
+<div class="pins-list" id="pins">
+    <div style="color: #444; font-size: 13px;">جاري الاتصال بـ Binance لرصد الفرص... 📡</div>
 </div>
 
-<div class="main-chart" id="tv_main_chart">
-    <div id="loader">جارِ تحميل الشارت...</div>
+<div class="chart-frame" id="chart">
+    <div class="live-price" id="lp">0.00</div>
 </div>
 
 <script src="https://s3.tradingview.com/tv.js"></script>
 <script>
-    let memory = {}, currentFilter = 'ALL', tvWidget = null, ws = null;
-    const CONFIG = { ZZ_THRESHOLD: 0.012, MIN_VOLUME: 5000000, EMA_PERIOD: 200, TOLERANCE: 0.07 };
+    let memory = {}, filter = 'ALL', tv = null, ws = null;
+    const CONFIG = { ZZ: 0.012, VOL: 5000000 };
 
-    // محرك المسح المحسن (إصلاح أخطاء التسمية ومطابقة الأزرار)
-    function scanHarmonic(p) {
+    // 1. محرك الهارمونيك (Logic)
+    function scan(p) {
         const X=p[0].price, A=p[1].price, B=p[2].price, C=p[3].price, D=p[4].price;
-        const XA=Math.abs(A-X), AB=Math.abs(B-A);
-        const rAB = AB/XA, rXD = Math.abs(D-X)/XA;
-
-        if(isWithin(rAB, 0.44, 0.06) && isWithin(rXD, 0.886, 0.05)) return {name:"Bat", color:"#ffcc00", type:D<C?"Bullish":"Bearish"};
-        if(isWithin(rAB, 0.5, 0.1) && C > Math.max(A, X) && isWithin(rXD, 0.786, 0.05)) return {name:"Cypher", color:"#ff6600", type:D<C?"Bullish":"Bearish"};
-        if(isWithin(rAB, 0.886, 0.08)) return {name:"Shark", color:"#00c2ff", type:D<C?"Bullish":"Bearish"};
-        
+        const rAB = Math.abs(B-A)/Math.abs(A-X), rXD = Math.abs(D-X)/Math.abs(A-X);
+        if(Math.abs(rAB-0.44)<0.06 && Math.abs(rXD-0.886)<0.05) return {name:"Bat", color:"#ffcc00"};
+        if(Math.abs(rAB-0.5)<0.1 && C > Math.max(A,X)) return {name:"Cypher", color:"#ff6600"};
+        if(Math.abs(rAB-0.886)<0.08) return {name:"Shark", color:"#00c2ff"};
         return null;
     }
 
-    function isWithin(val, target, tol) { return Math.abs(val - target) <= tol; }
-
-    // نظام الفلترة وتحديث الأزرار والعدادات
-    function setFilter(model, btn) {
-        currentFilter = model;
-        document.querySelectorAll('.model-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        renderUI();
+    // 2. تحديث الرادار (Data Processing)
+    async function update(s, p) {
+        if(!memory[s]) memory[s] = {pivots:[], patterns:[]};
+        let m = memory[s];
+        if(m.pivots.length==0 || Math.abs(p-m.pivots[m.pivots.length-1].price)/m.pivots[m.pivots.length-1].price > CONFIG.ZZ) {
+            m.pivots.push({price:p});
+            if(m.pivots.length > 5) {
+                m.pivots.shift(); let pat = scan(m.pivots);
+                if(pat && !m.patterns.some(x=>x.name===pat.name)) {
+                    m.patterns.push(pat);
+                    render();
+                }
+            }
+        }
     }
 
-    function renderUI() {
-        const list = document.getElementById("pinsList");
+    // 3. الواجهة (UI)
+    function render() {
+        const list = document.getElementById("pins");
         list.innerHTML = "";
-        
         let counts = {Cypher:0, Shark:0, Bat:0, Butterfly:0};
-        let foundAny = false;
 
         for(let s in memory) {
             memory[s].patterns.forEach(p => {
                 if(counts[p.name] !== undefined) counts[p.name]++;
-                
-                if(currentFilter === 'ALL' || p.name === currentFilter) {
-                    foundAny = true;
+                if(filter === 'ALL' || p.name === filter) {
                     const card = document.createElement("div");
-                    card.className = "opportunity-card";
-                    card.style.borderLeftColor = p.color || '#ffcc00';
-                    card.innerHTML = `<div class="badge">${p.type}</div><b>${s}</b><br><small style="color:${p.color}">${p.name}</small>`;
-                    card.onclick = () => loadPair(s);
+                    card.className = "op-card";
+                    card.style.borderLeftColor = p.color;
+                    card.innerHTML = `<b>${s}</b><br><small style="color:${p.color}">${p.name}</small>`;
+                    card.onclick = () => { tv.chart().setSymbol("BINANCE:"+s); document.getElementById('lp').innerText = s; };
                     list.prepend(card);
                 }
             });
         }
-
-        // تحديث العدادات في الأزرار
-        for(let m in counts) {
-            const el = document.getElementById(`count-${m}`);
-            if(el) el.innerText = `(${counts[m]})`;
-        }
-
-        if(!foundAny) list.innerHTML = `<div style="color: #444; font-size: 12px; padding: 10px;">لا توجد نماذج ${currentFilter === 'ALL' ? '' : currentFilter} حالياً...</div>`;
+        for(let m in counts) document.getElementById(`c-${m}`).innerText = `(${counts[m]})`;
     }
 
-    function loadPair(symbol) {
-        if(tvWidget && tvWidget.chart) {
-            document.getElementById('loader').style.display = 'block';
-            tvWidget.chart().setSymbol("BINANCE:" + symbol, '60', () => {
-                document.getElementById('loader').style.display = 'none';
+    function setFilter(m, btn) {
+        filter = m;
+        document.querySelectorAll('.model-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        render();
+    }
+
+    function startWS() {
+        ws = new WebSocket("wss://stream.binance.com:9443/ws/!ticker@arr");
+        ws.onmessage = e => {
+            JSON.parse(e.data).forEach(i => {
+                if(i.s.endsWith("USDT") && parseFloat(i.q) > CONFIG.VOL) {
+                    update(i.s, parseFloat(i.c));
+                    if(i.s === "BTCUSDT") document.getElementById('lp').innerText = parseFloat(i.c).toLocaleString();
+                }
             });
-        }
+        };
     }
 
-    function handleManualSearch() {
-        const s = document.getElementById("coinSearch").value.toUpperCase();
-        if(s.length > 2) {
-            const pair = s.includes('USDT') ? s : s+'USDT';
-            loadPair(pair);
-        }
-    }
-
-    // تهيئة الشارت والعدادات عند التحميل
     window.onload = () => {
-        tvWidget = new TradingView.widget({
-            autosize: true, symbol: "BINANCE:BTCUSDT", interval: "60",
-            theme: "dark", container_id: "tv_main_chart", style: "1",
-            hide_top_toolbar: true
-        });
-        updateCounters(); // تهيئة العدادات عند الفتح
+        tv = new TradingView.widget({ autosize:true, symbol:"BINANCE:BTCUSDT", interval:"60", theme:"dark", container_id:"chart", style:"1" });
+        startWS();
     };
-
-    // وظيفة وهمية للتجربة (يجب استبدالها بالـ WebSocket الحقيقي)
-    function updateCounters() { renderUI(); }
 </script>
 </body>
 </html>
