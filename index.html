@@ -3,28 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>LIANA V11.2 | NAYRO VEX</title>
+<title>LIANA V11.4 | AUTO-LOCK</title>
 <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Tajawal:wght@500;800&display=swap" rel="stylesheet">
 <style>
 :root { 
     --bg:#000; --panel:#0d0d0d; --neon:#00ff41;
-    --GARTLEY:#00ff41; --BAT:#00d4ff; --BUTTERFLY:#bf00ff; 
-    --CRAB:#ffd700; --SHARK:#fffb00;
+    --GARTLEY:#00ff41; --BAT:#00d4ff; --BUTTERFLY:#bf00ff; --CRAB:#ffd700;
 }
 body { margin:0; font-family:'Tajawal', sans-serif; height:100vh; display:flex; flex-direction:column; background:var(--bg); color:#fff; overflow:hidden; }
 
-/* 🎖️ حاوية الرادار العسكري */
+/* الرادار العسكري */
 .radar-section { 
     height: 38vh; position: relative; overflow: hidden;
-    background: radial-gradient(circle, #051505 0%, #000 80%);
+    background: radial-gradient(circle, #051505 0%, #000 85%);
     border-bottom: 2px solid #111; display:flex; justify-content:center; align-items:center;
 }
 #radarCanvas { position: absolute; z-index: 1; }
 
-#chart_container { height:32vh; width:100%; background:#000; border-bottom:1px solid #1a1a1a; display:none; }
+#chart_container { height:34vh; width:100%; background:#000; border-bottom:1px solid #1a1a1a; display:none; }
 
-.search-box { padding:12px; background:#050505; border-bottom:1px solid #111; }
+.search-box { padding:12px; background:#050505; }
 #search-input { 
     width:100%; background:#0a0a0a; border:1px solid rgba(0,255,65,0.2); 
     padding:12px; border-radius:8px; color:var(--neon); font-family:'Orbitron'; outline:none;
@@ -37,19 +36,23 @@ body { margin:0; font-family:'Tajawal', sans-serif; height:100vh; display:flex; 
     align-items:center; cursor:pointer; animation: slideIn 0.3s ease;
 }
 @keyframes slideIn { from{opacity:0; transform:translateX(10px);} to{opacity:1; transform:translateX(0);} }
+
+/* وميض الهدف الجديد */
+.target-flash { animation: flash 1s infinite alternate; }
+@keyframes flash { from { box-shadow: 0 0 2px var(--neon); } to { box-shadow: 0 0 15px var(--neon); } }
 </style>
 </head>
 <body>
 
 <div class="radar-section">
-    <div style="position:absolute; top:10px; left:15px; font-family:Orbitron; font-size:0.6rem; color:var(--neon); z-index:5; letter-spacing:2px;">TACTICAL_SCANNER_V11.2</div>
+    <div style="position:absolute; top:10px; left:15px; font-family:Orbitron; font-size:0.6rem; color:var(--neon); z-index:5;">SYSTEM: AUTO_LOCK_ACTIVE</div>
     <canvas id="radarCanvas"></canvas>
 </div>
 
 <div id="chart_container"></div>
 
 <div class="search-box">
-    <input type="text" id="search-input" placeholder="ACQUIRING_TARGET..." oninput="Sniper.searchRadar(this.value)">
+    <input type="text" id="search-input" placeholder="SEARCH_TARGET..." oninput="Sniper.searchRadar(this.value)">
 </div>
 
 <div class="radar-list" id="radar-list"></div>
@@ -58,19 +61,28 @@ body { margin:0; font-family:'Tajawal', sans-serif; height:100vh; display:flex; 
 const Sniper = {
     chart:null, candleSeries:null, activeSeries:[], signals:new Map(),
     ctx:null, radarAngle:0, points:[], currentTF:'1h',
-    audio: new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'),
+    sounds: {
+        GARTLEY: new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'),
+        BAT: new Audio('https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3')
+    },
 
     init() {
         const canvas = document.getElementById('radarCanvas');
         this.ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight * 0.38;
+        this.resizeCanvas();
+        window.addEventListener('resize', () => this.resizeCanvas());
 
         requestAnimationFrame(() => {
             this.initChart();
             this.animateRadar();
             this.loadInitialData();
         });
+    },
+
+    resizeCanvas() {
+        const canvas = document.getElementById('radarCanvas');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight * 0.38;
     },
 
     initChart() {
@@ -91,13 +103,11 @@ const Sniper = {
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // رسم شبكة الرادار
         ctx.strokeStyle = 'rgba(0, 255, 65, 0.1)';
         for(let r=1; r<=3; r++) {
             ctx.beginPath(); ctx.arc(cx, cy, (radius/3)*r, 0, Math.PI*2); ctx.stroke();
         }
 
-        // رسم الشعاع الدوار
         ctx.save();
         ctx.translate(cx, cy); ctx.rotate(this.radarAngle);
         let grad = ctx.createLinearGradient(0, 0, radius, 0);
@@ -106,25 +116,18 @@ const Sniper = {
         ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0,0, radius, -0.4, 0); ctx.fill();
         ctx.restore();
 
-        // رسم النقاط والأشعة الاستهدافية
         this.points.forEach(p => {
             if(p.highlight) {
-                // الشعاع الرابط (Laser Line)
-                ctx.strokeStyle = 'rgba(0, 255, 65, 0.5)';
+                ctx.lineWidth = 2 + Math.sin(Date.now()/100)*1.5;
+                ctx.strokeStyle = p.color;
                 ctx.setLineDash([5, 5]);
                 ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(p.x, p.y); ctx.stroke();
                 ctx.setLineDash([]);
-                
-                // هالة الاستهداف
                 ctx.strokeStyle = '#fff';
-                ctx.beginPath(); ctx.arc(p.x, p.y, 10 + Math.sin(Date.now()/100)*3, 0, Math.PI*2); ctx.stroke();
+                ctx.beginPath(); ctx.arc(p.x, p.y, 10 + Math.sin(Date.now()/100)*4, 0, Math.PI*2); ctx.stroke();
             }
-
             ctx.fillStyle = p.highlight ? '#fff' : p.color;
-            ctx.shadowBlur = 15; ctx.shadowColor = p.color;
-            ctx.beginPath(); ctx.arc(p.x, p.y, p.highlight ? 6 : 4, 0, Math.PI*2); ctx.fill();
-            ctx.shadowBlur = 0;
-
+            ctx.beginPath(); ctx.arc(p.x, p.y, p.highlight ? 7 : 4, 0, Math.PI*2); ctx.fill();
             ctx.fillStyle = "#fff"; ctx.font = "8px Orbitron";
             ctx.fillText(p.symbol, p.x + 10, p.y - 10);
         });
@@ -133,6 +136,7 @@ const Sniper = {
         requestAnimationFrame(() => this.animateRadar());
     },
 
+    // 🔹 إضافة الإشارة والاستهداف التلقائي
     addSignal(s, m, pts) {
         if(this.signals.has(s)) return;
         const cx = canvas.width / 2, cy = canvas.height / 2;
@@ -140,36 +144,27 @@ const Sniper = {
         const a = Math.random() * Math.PI * 2;
         const colors = { GARTLEY: '#00ff41', BAT: '#00d4ff', BUTTERFLY: '#bf00ff', CRAB:'#ffd700' };
         
-        const p = { 
-            symbol: s, x: cx + r * Math.cos(a), y: cy + r * Math.sin(a), 
-            color: colors[m] || '#fff', highlight: false, pts: pts, model: m 
-        };
+        const p = { symbol: s, x: cx + r * Math.cos(a), y: cy + r * Math.sin(a), color: colors[m], highlight: false, pts: pts, model: m };
         this.points.push(p);
         this.signals.set(s, p);
-        this.audio.play().catch(()=>{});
+
+        if(this.sounds[m]) this.sounds[m].play().catch(()=>{});
 
         const card = document.createElement('div');
-        card.className = 'sig-card'; card.style.borderRightColor = colors[m];
-        card.innerHTML = `<div><b>${s}</b><br><small>${m}</small></div><div style="color:var(--neon); font-size:0.6rem;">LOCKED</div>`;
+        card.className = 'sig-card target-flash'; card.style.borderRightColor = colors[m];
+        card.innerHTML = `<div><b>${s}</b><br><small style="color:${colors[m]}">${m}</small></div><div style="color:var(--neon); font-size:0.6rem;">AUTO_LOCKED</div>`;
         card.onclick = () => this.showTarget(s);
         document.getElementById('radar-list').prepend(card);
-    },
 
-    searchRadar(val) {
-        const q = val.toUpperCase();
-        let found = false;
-        this.points.forEach(p => {
-            const match = q !== "" && p.symbol.includes(q);
-            if(match && !p.highlight) this.audio.play().catch(()=>{}); 
-            p.highlight = match;
-            if(match) found = true;
-        });
+        // 🔹 الخطوة السحرية: استهداف تلقائي فور الظهور
+        this.showTarget(s);
     },
 
     showTarget(s) {
         const data = this.signals.get(s);
+        if(!data) return;
         document.getElementById('chart_container').style.display = 'block';
-        this.searchRadar(s); // تمييز النقطة بصرياً
+        this.searchRadar(s);
         this.loadPair(s, data.pts, data.model);
     },
 
@@ -185,16 +180,21 @@ const Sniper = {
     },
 
     drawPattern(pts, m) {
+        const colors = { GARTLEY: '#00ff41', BAT: '#00d4ff', BUTTERFLY: '#bf00ff', CRAB:'#ffd700' };
         this.activeSeries.forEach(s => this.chart.removeSeries(s));
         this.activeSeries = [];
-        const line = this.chart.addLineSeries({ color: `var(--${m})`, lineWidth: 2, lineStyle: 0 });
+        const line = this.chart.addLineSeries({ color: colors[m], lineWidth: 2 });
         line.setData(pts.map(p => ({ time: p.t, value: p.v })));
         this.activeSeries.push(line);
 
-        // 3️⃣ رسم مؤشرات X,A,B,C,D كعلامات احترافية
         this.candleSeries.setMarkers(pts.map((p, i) => ({
-            time: p.t, position: 'aboveBar', color: '#fff', shape: 'arrowDown', text: ['X','A','B','C','D'][i]
+            time: p.t, position: 'aboveBar', color: colors[m], shape: 'arrowDown', text: ['X','A','B','C','D'][i]
         })));
+    },
+
+    searchRadar(val) {
+        const q = val.toUpperCase();
+        this.points.forEach(p => p.highlight = q !== "" && p.symbol.includes(q));
     },
 
     async analyze(s) {
@@ -211,11 +211,11 @@ const Sniper = {
             if(pivots.length < 5) return;
             const pts = pivots.slice(-5);
             const [X, A, B, C, D] = pts.map(p => p.v);
-            const xa = Math.abs(A-X), ab = Math.abs(B-A)/xa, ad = Math.abs(D-A)/xa;
-
+            const xa = Math.abs(A-X), ab = Math.abs(B-A)/xa;
+            
             let m = "";
-            if(ab >= 0.61 && ab <= 0.63 && ad >= 0.77 && ad <= 0.8) m = "GARTLEY";
-            else if(ab >= 0.38 && ab <= 0.51 && ad >= 0.87 && ad <= 0.9) m = "BAT";
+            if(ab >= 0.61 && ab <= 0.63) m = "GARTLEY";
+            else if(ab >= 0.38 && ab <= 0.51) m = "BAT";
             
             if(m) this.addSignal(s, m, pts);
         } catch(e){}
@@ -230,9 +230,9 @@ const Sniper = {
     startScanner() {
         let idx = 0;
         const scan = async () => {
-            const batch = this.pairs.slice(idx, idx + 12);
+            const batch = this.pairs.slice(idx, idx + 10);
             await Promise.allSettled(batch.map(s => this.analyze(s)));
-            idx = (idx + 12) % this.pairs.length;
+            idx = (idx + 10) % this.pairs.length;
             setTimeout(scan, 2500);
         };
         scan();
