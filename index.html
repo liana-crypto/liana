@@ -1,114 +1,242 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAYROVEX V18 | Smart Hub</title>
-    <style>
-        :root { --bg: #0b0e11; --panel: #161a1e; --accent: #00ff88; --gold: #ffcc00; --text: #d1d4dc; }
-        body { margin: 0; background: var(--bg); color: var(--text); font-family: sans-serif; overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
-        header { height: 50px; background: var(--panel); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; border-bottom: 1px solid #2b2f36; }
-        .main-container { display: grid; grid-template-columns: 1fr 300px; flex: 1; }
-        .side-panel { background: var(--panel); border-right: 1px solid #2b2f36; padding: 15px; overflow-y: auto; }
-        .signal-card { background: #1e2329; border-right: 4px solid var(--gold); padding: 12px; margin-bottom: 10px; border-radius: 4px; cursor: pointer; transition: 0.3s; animation: slideIn 0.3s ease; }
-        .signal-card:hover { background: #2b2f36; }
-        @keyframes slideIn { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        #tv_chart_container { height: 100%; width: 100%; }
-        .v-tag { color: var(--accent); font-weight: bold; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NAYROVEX V20 | Ultimate PRZ Radar LIVE</title>
+<style>
+:root { --bg:#0b0e11; --card:#161a1e; --accent:#ffcc00; --text:#fff; --green:#00ff88; --red:#ff3e3e; }
+body { margin:0; font-family:sans-serif; background:var(--bg); color:var(--text); display:flex; flex-direction:column; height:100vh; overflow:hidden; }
+.top-nav{display:flex; gap:10px; padding:10px; background:var(--card);}
+.top-nav input{flex:1; padding:8px; border-radius:8px; border:1px solid #2b2f36; background:#0b0e11; color:white; outline:none;}
+.top-nav button{padding:8px 15px; border:none; border-radius:8px; background:var(--accent); cursor:pointer; font-weight:bold;}
+.pins-bar{display:flex; gap:10px; padding:10px; overflow-x:auto;}
+.pin{padding:8px 15px; border-radius:20px; border:1px solid #2b2f36; cursor:pointer;}
+.pin.active{border-color:var(--accent); background:#1e2329; color:var(--accent);}
+.display-panel{display:flex; justify-content:space-between; padding:15px; align-items:center;}
+.big-price{font-size:38px; font-weight:bold; color:var(--green);}
+.bias-indicator{font-size:14px; font-weight:bold; background:rgba(255,62,62,0.1); padding:5px 10px; border-radius:5px; color:var(--red);}
+#chart-container{flex:1; position:relative; background:#000;}
+#loader{position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); display:none; color:var(--accent); font-weight:bold; z-index:10;}
+.radar-box{position:absolute; bottom:20px; right:20px; background:rgba(22,26,30,0.9); padding:10px; border-radius:10px; border-right:3px solid var(--accent); z-index:5; font-size:11px;}
+</style>
 </head>
 <body>
 
-<header>
-    <div class="logo">NAYROVEX <span class="v-tag">V18 SMART</span></div>
-    <div id="status" style="color:var(--accent)">● Intelligent Engine Active</div>
-    <div id="clock">00:00:00</div>
-</header>
-
-<div class="main-container">
-    <div id="tv_chart_container"></div>
-    <aside class="side-panel">
-        <div style="color:var(--gold); font-weight:bold; margin-bottom:15px;">PRZ Radar 🎯</div>
-        <div id="signals-list"></div>
-    </aside>
+<div class="top-nav">
+<input type="text" id="coinInput" placeholder="BTC, ETH, SOL..." onkeypress="if(event.key==='Enter') handleSearch()">
+<button onclick="handleSearch()">رصد 🎯</button>
 </div>
 
-<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+<div class="pins-bar" id="pins">
+<div class="pin active" onclick="updateApp('BTCUSDT', this)">BTC</div>
+<div class="pin" onclick="updateApp('ETHUSDT', this)">ETH</div>
+<div class="pin" onclick="updateApp('SOLUSDT', this)">SOL</div>
+</div>
+
+<div class="display-panel">
+<div>
+<span style="font-size:20px;font-weight:bold;" id="currentPair">BTCUSDT</span><br>
+<span class="bias-indicator" id="biasLabel">PRZ Radar Idle</span>
+</div>
+<div class="big-price" id="priceDisplay">0.00</div>
+</div>
+
+<div id="chart-container">
+<div id="loader">جارٍ التحديث...</div>
+<div id="tv_widget" style="height:100%; width:100%;"></div>
+<div class="radar-box" id="radarNote">PRZ Radar Active</div>
+</div>
+
+<script src="https://s3.tradingview.com/tv.js"></script>
 <script>
-    let tvWidget = null;
+let tvWidget = null;
+let priceWs = null;
+let pivotPoints = [];
+const zigzagThreshold = 0.005;
+let globalMemory = {};
+let lastAlerts = {};
 
-    // 1. تهيئة الشارت لمرة واحدة فقط (Singleton Pattern)
-    function initChart() {
-        tvWidget = new TradingView.widget({
-            "autosize": true,
-            "symbol": "BINANCE:BTCUSDT",
-            "interval": "60",
-            "timezone": "Etc/UTC",
-            "theme": "dark",
-            "style": "1",
-            "locale": "ar",
-            "toolbar_bg": "#161a1e",
-            "enable_publishing": false,
-            "hide_side_toolbar": false,
-            "allow_symbol_change": true,
-            "container_id": "tv_chart_container"
+// ==================== 1. تهيئة الشارت ====================
+function initChart(symbol='BTCUSDT'){
+    tvWidget = new TradingView.widget({
+        autosize:true,
+        symbol:'BINANCE:'+symbol,
+        interval:'60',
+        theme:'dark',
+        style:'1',
+        locale:'ar',
+        toolbar_bg:'#161a1e',
+        hide_top_toolbar:true,
+        container_id:'tv_widget'
+    });
+}
+
+// ==================== 2. تغيير الزوج ====================
+function updateApp(symbol, element){
+    symbol = symbol.toUpperCase();
+    if(!symbol.includes('USDT')) symbol+='USDT';
+    document.getElementById('currentPair').innerText=symbol;
+    if(element){document.querySelectorAll('.pin').forEach(p=>p.classList.remove('active')); element.classList.add('active');}
+    document.getElementById('loader').style.display='block';
+    if(tvWidget && typeof tvWidget.chart==='function'){
+        tvWidget.chart().setSymbol('BINANCE:'+symbol,'60',()=>{ document.getElementById('loader').style.display='none';});
+    }else initChart(symbol);
+    connectPriceSocket(symbol);
+}
+
+// ==================== 3. WebSocket مباشر للشموع ====================
+function connectPriceSocket(symbol){
+    if(priceWs) priceWs.close();
+    priceWs = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@kline_1h`);
+    priceWs.onmessage = (e)=>{
+        const data=JSON.parse(e.data);
+        const k=data.k;
+        const price=parseFloat(k.c);
+        document.getElementById('priceDisplay').innerText=price.toLocaleString(undefined,{minimumFractionDigits:2});
+        document.getElementById('priceDisplay').style.color=price>=parseFloat(k.o)?'#00ff88':'#ff3e3e';
+        handlePivot(k);
+    };
+}
+
+// ==================== 4. ZigZag Pivot ====================
+function handlePivot(k){
+    const t=k.t/1000;
+    const p=parseFloat(k.c);
+    if(pivotPoints.length<1){pivotPoints.push({time:t, price:p}); return;}
+    const last=pivotPoints[pivotPoints.length-1];
+    if(Math.abs(p-last.price)/last.price>zigzagThreshold) pivotPoints.push({time:t, price:p});
+    if(pivotPoints.length>=5){
+        const pattern=scanForPatterns(pivotPoints.slice(-5));
+        if(pattern) autoDrawPattern(pivotPoints.slice(-5),pattern);
+    }
+}
+
+// ==================== 5. Harmonic Scan لكل النماذج ====================
+function isWithinFibo(ratio,target,tol=0.02){return Math.abs(ratio-target)<=tol;}
+function scanForPatterns(points){
+    if(points.length<5) return null;
+    const X=points[0], A=points[1], B=points[2], C=points[3], D=points[4];
+    const XA=Math.abs(A.price-X.price);
+    const AB=Math.abs(B.price-A.price);
+    const BC=Math.abs(C.price-B.price);
+    const CD=Math.abs(D.price-C.price);
+    const retracementAB=AB/XA;
+    const retracementD=Math.abs(D.price-X.price)/XA;
+
+    // Bat
+    if((isWithinFibo(retracementAB,0.382)||isWithinFibo(retracementAB,0.5)) && isWithinFibo(retracementD,0.886))
+        return {name:'Bullish Bat', color:'#ffcc00'};
+    // Gartley
+    if(isWithinFibo(retracementAB,0.618)&&isWithinFibo(retracementD,0.786))
+        return {name:'Bullish Gartley', color:'#00ff88'};
+    // Crab
+    if(isWithinFibo(retracementAB,0.618)&&isWithinFibo(retracementD,1.618))
+        return {name:'Bullish Crab', color:'#ff66ff'};
+    // Butterfly
+    if(isWithinFibo(retracementAB,0.786)&&isWithinFibo(retracementD,1.272))
+        return {name:'Bullish Butterfly', color:'#ff9900'};
+    // Shark
+    if(isWithinFibo(retracementAB,0.886)&&isWithinFibo(retracementD,1.13))
+        return {name:'Bullish Shark', color:'#66ffff'};
+    // Cypher
+    if(isWithinFibo(retracementAB,0.382)&&isWithinFibo(retracementD,0.786))
+        return {name:'Bullish Cypher', color:'#ff4444'};
+    return null;
+}
+
+// ==================== 6. رسم النموذج ====================
+function autoDrawPattern(points,patternInfo){
+    if(tvWidget && typeof tvWidget.chart==='function'){
+        const shapePoints=points.map(p=>({time:p.time, price:p.price}));
+        tvWidget.chart().createMultipointShape(shapePoints,{
+            shape:'polyline',
+            color:patternInfo.color,
+            lineWidth:3,
+            text:patternInfo.name+' (PRZ Found)'
         });
+        document.getElementById('biasLabel').innerText=patternInfo.name.toUpperCase();
+        document.getElementById('biasLabel').style.background=patternInfo.color+'33';
+        document.getElementById('biasLabel').style.color=patternInfo.color;
     }
+}
 
-    // 2. تغيير الزوج والفريم بذكاء بدون إعادة تحميل الصفحة
-    function smartNavigate(pair, timeframe) {
-        if (tvWidget) {
-            // ملاحظة: في نسخة الـ Widget العامة، نقوم بتحديث الـ src لضمان السرعة
-            const container = document.getElementById('tv_chart_container');
-            container.innerHTML = ''; 
-            new TradingView.widget({
-                "autosize": true,
-                "symbol": "BINANCE:" + pair.toUpperCase(),
-                "interval": timeframe,
-                "theme": "dark",
-                "style": "1",
-                "locale": "ar",
-                "container_id": "tv_chart_container"
-            });
+// ==================== 7. البحث اليدوي ====================
+function handleSearch(){
+    const val=document.getElementById('coinInput').value;
+    if(val) updateApp(val,null);
+}
+
+// ==================== 8. فلتر الدقة العالية ====================
+async function checkPrecisionFilters(symbol, patternType){
+    try{
+        const res=await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}`);
+        const data=await res.json();
+        const priceChange=parseFloat(data.priceChangePercent);
+        const volume=parseFloat(data.quoteVolume);
+        if(volume<1000000) return false;
+        if(patternType.includes('Bullish') && priceChange<-2) return true;
+        if(patternType.includes('Bearish') && priceChange>5) return true;
+        return false;
+    }catch(e){return false;}
+}
+
+// ==================== 9. تنبيه + Pin ذكي ====================
+async function alertNewPattern(symbol,pattern){
+    const now=Date.now();
+    if(lastAlerts[symbol] && (now-lastAlerts[symbol]<30*60*1000)) return;
+    const precise=await checkPrecisionFilters(symbol, pattern.name);
+    if(!precise) return;
+    lastAlerts[symbol]=now;
+
+    const list=document.getElementById('pins');
+    let pin=document.getElementById(`pin-${symbol}`);
+    if(!pin){pin=document.createElement('div'); pin.id=`pin-${symbol}`; pin.className='pin'; list.prepend(pin);}
+    pin.style.borderRight=`4px solid ${pattern.color}`;
+    pin.innerHTML=`<b>${symbol}</b><br><small style="color:${pattern.color}">${pattern.name}</small>`;
+    pin.onclick=()=>{
+        updateApp(symbol,pin);
+        setTimeout(()=> drawHarmonicPattern(globalMemory[symbol].pivots, pattern.name),1500);
+    };
+    playAlertSound();
+}
+function playAlertSound(){
+    const audio=new Audio('https://assets.mixkit.co/sfx/preview/mixkit-sci-fi-confirmation-914.mp3');
+    audio.play().catch(()=>{});
+}
+
+// ==================== 10. الماسح العالمي ====================
+async function startGlobalScan(){
+    const globalWS=new WebSocket(`wss://stream.binance.com:9443/ws/!ticker@arr`);
+    globalWS.onmessage=async (e)=>{
+        const data=JSON.parse(e.data).filter(d=>d.s.endsWith('USDT'));
+        for(const pair of data){
+            const symbol=pair.s;
+            const price=parseFloat(pair.c);
+            if(!globalMemory[symbol]) globalMemory[symbol]={pivots:[]};
+            const mem=globalMemory[symbol];
+            const time=Math.floor(Date.now()/1000);
+            if(mem.pivots.length===0) mem.pivots.push({time, price});
+            else{
+                const lastPivot=mem.pivots[mem.pivots.length-1];
+                if(Math.abs(price-lastPivot.price)/lastPivot.price>zigzagThreshold){
+                    mem.pivots.push({time, price});
+                    if(mem.pivots.length>5) mem.pivots.shift();
+                    const pattern=scanForPatterns(mem.pivots);
+                    if(pattern) alertNewPattern(symbol, pattern);
+                }
+            }
         }
-    }
+    };
+}
 
-    // 3. إضافة إشارة تفاعلية للرادار
-    function addSignal(pair, pattern, timeframe, price) {
-        const list = document.getElementById('signals-list');
-        const card = document.createElement('div');
-        card.className = 'signal-card';
-        
-        // عند الضغط: يتم التغيير فوراً
-        card.onclick = () => {
-            smartNavigate(pair, timeframe);
-            console.log(`Navigating to ${pair} on ${timeframe}m`);
-        };
-
-        card.innerHTML = `
-            <div style="display:flex; justify-content:space-between">
-                <strong>${pair}</strong>
-                <span style="color:var(--gold)">${timeframe}m</span>
-            </div>
-            <div style="color:var(--accent); font-size:12px; margin:5px 0;">${pattern}</div>
-            <div style="font-size:13px;">PRZ: ${price}</div>
-            <div style="font-size:9px; opacity:0.5; margin-top:5px;">انقر للتحليل الفوري ⚡</div>
-        `;
-        
-        if (list.children.length > 8) list.lastChild.remove();
-        list.prepend(card);
-    }
-
-    // تحديث الوقت
-    setInterval(() => {
-        document.getElementById('clock').innerText = new Date().toLocaleTimeString('ar-EG');
-    }, 1000);
-
-    // محاكاة وصول إشارات ذكية من الـ Worker
-    setTimeout(() => addSignal('ETHUSDT', 'Bullish Gartley', '60', '2410.50'), 2000);
-    setTimeout(() => addSignal('SOLUSDT', 'Bearish Bat', '15', '145.20'), 5000);
-
-    window.onload = initChart;
+// ==================== 11. تشغيل كل شيء عند التحميل ====================
+window.onload=()=>{
+    initChart();
+    connectPriceSocket('btcusdt');
+    startGlobalScan();
+};
 </script>
+
 </body>
 </html>
