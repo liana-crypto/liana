@@ -3,58 +3,50 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>LIANA V11.5 | NAYRO VEX</title>
+<title>LIANA V12 | ULTIMATE</title>
 <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Tajawal:wght@500;800&display=swap" rel="stylesheet">
 <style>
-:root { 
-    --bg:#000; --panel:#0d0d0d; --neon:#00ff41;
-    --GARTLEY:#00ff41; --BAT:#00d4ff; --BUTTERFLY:#bf00ff; --CRAB:#ffd700;
-}
-body { margin:0; font-family:'Tajawal', sans-serif; height:100vh; display:flex; flex-direction:column; background:var(--bg); color:#fff; overflow:hidden; }
+:root { --bg:#000; --neon:#00ff41; --GARTLEY:#00ff41; --BAT:#00d4ff; --BUTTERFLY:#bf00ff; }
+body { margin:0; font-family:'Tajawal', sans-serif; background:var(--bg); color:#fff; overflow:hidden; height:100vh; display:flex; flex-direction:column; }
 
-/* قسم الرادار */
-.radar-section { 
-    height: 35vh; position: relative; overflow: hidden;
-    background: radial-gradient(circle, #051505 0%, #000 85%);
-    border-bottom: 2px solid #111; display:flex; justify-content:center; align-items:center;
-}
+/* تأثير النبض للأهداف الجديدة */
+@keyframes pulse-ring { 0% { transform: scale(0.33); opacity: 0; } 50% { opacity: 0.5; } 100% { transform: scale(1.5); opacity: 0; } }
+
+.status-bar { font-size: 0.6rem; color: #888; padding: 10px 15px; font-family: Orbitron; background: #050505; border-bottom: 2px solid #111; display: flex; justify-content: space-between; align-items: center; }
+.radar-section { height: 32vh; position: relative; background: radial-gradient(circle, #081a08 0%, #000 85%); border-bottom: 2px solid #111; }
 #radarCanvas { position: absolute; z-index: 1; width: 100%; height: 100%; }
 
-/* قسم الشارت - جعلته ظاهراً لتجنب مشاكل البياض */
-#chart_container { 
-    height: 35vh; width: 100%; background: #000; 
-    border-bottom: 1px solid #1a1a1a; position: relative;
-}
+#chart_container { height: 38vh; width: 100%; background: #000; border-bottom: 1px solid #1a1a1a; }
 
-.search-box { padding:10px; background:#050505; border-bottom:1px solid #111; }
-#search-input { 
-    width:100%; background:#0a0a0a; border:1px solid rgba(0,255,65,0.3); 
-    padding:10px; border-radius:8px; color:var(--neon); font-family:'Orbitron'; outline:none;
-}
+.search-container { padding: 8px; background: #080808; display: flex; gap: 5px; }
+#search-input { flex: 1; background: #000; border: 1px solid #1a1a1a; padding: 12px; border-radius: 5px; color: var(--neon); font-family: 'Orbitron'; outline: none; }
+#search-input:focus { border-color: var(--neon); }
 
-.radar-list { flex:1; overflow-y:auto; padding:10px; background:#000; }
+.radar-list { flex:1; overflow-y:auto; padding:10px; background: #000; }
 .sig-card { 
     background:#0d0d0d; border:1px solid #1a1a1a; padding:12px; margin-bottom:8px; 
     border-right:4px solid var(--neon); display:flex; justify-content:space-between; 
-    align-items:center; cursor:pointer; animation: slideIn 0.3s ease;
+    align-items:center; cursor:pointer; position: relative;
 }
-@keyframes slideIn { from{opacity:0; transform:translateX(10px);} to{opacity:1; transform:translateX(0);} }
-.target-flash { animation: flash 1s infinite alternate; }
-@keyframes flash { from { box-shadow: 0 0 2px var(--neon); } to { box-shadow: 0 0 10px var(--neon); } }
+.new-target-tag { position:absolute; top:-5px; left:-5px; background:var(--neon); color:#000; font-size:0.5rem; padding:2px 5px; font-weight:900; }
 </style>
 </head>
 <body>
 
+<div class="status-bar">
+    <div>GEAR: <span id="log-status" style="color:var(--neon)">50_TARGETS_ACTIVE</span></div>
+    <div id="target-count" style="color:var(--neon); font-weight:bold; font-size: 0.8rem;">FOUND: 0</div>
+</div>
+
 <div class="radar-section">
-    <div style="position:absolute; top:10px; left:15px; font-family:Orbitron; font-size:0.6rem; color:var(--neon); z-index:5;">SYSTEM: ACTIVE_V11.5</div>
     <canvas id="radarCanvas"></canvas>
 </div>
 
 <div id="chart_container"></div>
 
-<div class="search-box">
-    <input type="text" id="search-input" placeholder="SEARCH_TARGET_LOCATOR..." oninput="Sniper.searchRadar(this.value)">
+<div class="search-container">
+    <input type="text" id="search-input" placeholder="SNIPE_TARGET_BY_NAME..." oninput="Sniper.liveFilter(this.value)">
 </div>
 
 <div class="radar-list" id="radar-list"></div>
@@ -62,174 +54,176 @@ body { margin:0; font-family:'Tajawal', sans-serif; height:100vh; display:flex; 
 <script>
 const Sniper = {
     chart:null, candleSeries:null, activeSeries:[], signals:new Map(),
-    ctx:null, radarAngle:0, points:[], currentTF:'1h',
-    sounds: {
-        GARTLEY: new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'),
-        BAT: new Audio('https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3'),
-        SCAN: new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3')
-    },
+    ctx:null, radarAngle:0, points:[], currentTF:'1h', foundCount: 0,
+    alertSound: new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'),
 
     init() {
         const canvas = document.getElementById('radarCanvas');
         this.ctx = canvas.getContext('2d');
-        
         this.resize();
         window.addEventListener('resize', () => this.resize());
 
-        // تهيئة الشارت
         const container = document.getElementById('chart_container');
         this.chart = LightweightCharts.createChart(container, {
             layout: { backgroundColor: '#000', textColor: '#d1d4dc' },
             grid: { vertLines: { visible: false }, horzLines: { color: '#080808' } },
-            width: container.clientWidth, height: container.clientHeight,
-            timeScale: { borderColor: '#111', timeVisible: true }
+            width: container.clientWidth, height: container.clientHeight
         });
         this.candleSeries = this.chart.addCandlestickSeries({ upColor: '#00ff41', downColor: '#ff3131', borderVisible: false });
 
         this.animateRadar();
-        this.loadInitialData();
+        this.load50Pairs();
     },
 
     resize() {
         const canvas = document.getElementById('radarCanvas');
         canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight * 0.35;
-        if(this.chart) {
-            const container = document.getElementById('chart_container');
-            this.chart.applyOptions({ width: container.clientWidth, height: container.clientHeight });
-        }
+        canvas.height = window.innerHeight * 0.32;
     },
 
     animateRadar() {
-        const { ctx, points } = this;
+        const { ctx } = this;
         const cx = canvas.width / 2, cy = canvas.height / 2;
         const radius = Math.min(cx, cy) - 20;
-
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // دوائر الشبكة
         ctx.strokeStyle = 'rgba(0, 255, 65, 0.1)';
-        for(let r=1; r<=3; r++) {
-            ctx.beginPath(); ctx.arc(cx, cy, (radius/3)*r, 0, Math.PI*2); ctx.stroke();
-        }
+        for(let r=1; r<=3; r++) { ctx.beginPath(); ctx.arc(cx, cy, (radius/3)*r, 0, Math.PI*2); ctx.stroke(); }
 
-        // شعاع المسح
         ctx.save();
         ctx.translate(cx, cy); ctx.rotate(this.radarAngle);
         let grad = ctx.createLinearGradient(0, 0, radius, 0);
-        grad.addColorStop(0, 'transparent'); grad.addColorStop(1, 'rgba(0, 255, 65, 0.3)');
+        grad.addColorStop(1, 'rgba(0, 255, 65, 0.15)');
         ctx.fillStyle = grad;
         ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0,0, radius, -0.4, 0); ctx.fill();
         ctx.restore();
 
-        // رسم النقاط
         this.points.forEach(p => {
-            if(p.highlight) {
-                ctx.lineWidth = 2; ctx.strokeStyle = p.color;
-                ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(p.x, p.y); ctx.stroke();
-                ctx.beginPath(); ctx.arc(p.x, p.y, 10 + Math.sin(Date.now()/100)*3, 0, Math.PI*2); ctx.stroke();
+            if(p.hidden) return;
+            // رسم تأثير النبض Pulse
+            if(p.isNew) {
+                ctx.strokeStyle = p.color;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 8 + Math.sin(Date.now()/100)*6, 0, Math.PI*2);
+                ctx.stroke();
             }
             ctx.fillStyle = p.highlight ? '#fff' : p.color;
+            ctx.shadowBlur = p.highlight ? 15 : 5; ctx.shadowColor = p.color;
             ctx.beginPath(); ctx.arc(p.x, p.y, p.highlight ? 6 : 4, 0, Math.PI*2); ctx.fill();
+            ctx.shadowBlur = 0;
             ctx.fillStyle = "#fff"; ctx.font = "8px Orbitron";
             ctx.fillText(p.symbol, p.x + 8, p.y - 8);
         });
 
-        this.radarAngle += 0.03;
+        this.radarAngle += 0.04;
         requestAnimationFrame(() => this.animateRadar());
     },
 
-    addSignal(s, m, pts) {
-        if(this.signals.has(s)) return;
-        const cx = canvas.width / 2, cy = canvas.height / 2;
-        const r = (Math.min(cx, cy) - 50) * Math.random() + 20;
-        const a = Math.random() * Math.PI * 2;
-        const colors = { GARTLEY: '#00ff41', BAT: '#00d4ff', BUTTERFLY: '#bf00ff' };
-        
-        const p = { symbol: s, x: cx + r * Math.cos(a), y: cy + r * Math.sin(a), color: colors[m] || '#fff', highlight: false, pts, model: m };
-        this.points.push(p);
-        this.signals.set(s, p);
-
-        if(this.sounds[m]) this.sounds[m].play().catch(()=>{});
-
-        const card = document.createElement('div');
-        card.className = 'sig-card target-flash'; card.style.borderRightColor = colors[m];
-        card.innerHTML = `<div><b>${s}</b><br><small style="color:${colors[m]}">${m}</small></div><div style="color:var(--neon); font-size:0.5rem;">LOCKED</div>`;
-        card.onclick = () => this.showTarget(s);
-        document.getElementById('radar-list').prepend(card);
-
-        this.showTarget(s); // استهداف تلقائي
-    },
-
-    showTarget(s) {
-        const data = this.signals.get(s);
-        if(!data) return;
-        this.searchRadar(s);
-        this.loadPair(s, data.pts, data.model);
-    },
-
-    loadPair(s, pts, m) {
-        fetch(`https://api.binance.com/api/v3/klines?symbol=${s}&interval=${this.currentTF}&limit=100`)
-        .then(r => r.json()).then(k => {
-            this.candleSeries.setData(k.map(d => ({ 
-                time: d[0]/1000, open: +d[1], high: +d[2], low: +d[3], close: +d[4] 
-            })));
-            this.drawPattern(pts, m);
-            this.chart.timeScale().fitContent();
-        });
-    },
-
-    drawPattern(pts, m) {
-        const colors = { GARTLEY: '#00ff41', BAT: '#00d4ff', BUTTERFLY: '#bf00ff' };
-        this.activeSeries.forEach(s => this.chart.removeSeries(s));
-        this.activeSeries = [];
-        const line = this.chart.addLineSeries({ color: colors[m], lineWidth: 2 });
-        line.setData(pts.map(p => ({ time: p.t, value: p.v })));
-        this.activeSeries.push(line);
-
-        this.candleSeries.setMarkers(pts.map((p, i) => ({
-            time: p.t, position: 'aboveBar', color: colors[m], shape: 'arrowDown', text: ['X','A','B','C','D'][i]
-        })));
-    },
-
-    searchRadar(val) {
-        const q = val.toUpperCase();
-        this.points.forEach(p => p.highlight = q !== "" && p.symbol.includes(q));
+    async load50Pairs() {
+        const info = await fetch('https://api.binance.com/api/v3/exchangeInfo').then(r=>r.json());
+        this.pairs = info.symbols
+            .filter(s=>s.quoteAsset==='USDT' && s.status==='TRADING')
+            .map(s=>s.symbol)
+            .slice(0, 50); // رفع العدد لـ 50
+        this.startScanner();
     },
 
     async analyze(s) {
         try {
-            const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${s}&interval=${this.currentTF}&limit=80`);
+            document.getElementById('log-status').innerText = `SCANNING: ${s}`;
+            const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${s}&interval=${this.currentTF}&limit=100`);
             const data = await res.json();
             const close = data.map(d => +d[4]);
+            
             let pivots = [];
-            for(let i=3; i<close.length-3; i++) {
-                const slice = close.slice(i-3, i+3);
-                if(slice.every(v => v <= close[i]) || slice.every(v => v >= close[i]))
+            for(let i=1; i<close.length-1; i++) {
+                if((close[i] > close[i-1] && close[i] > close[i+1]) || (close[i] < close[i-1] && close[i] < close[i+1]))
                     pivots.push({v: close[i], t: data[i][0]/1000});
             }
             if(pivots.length < 5) return;
             const pts = pivots.slice(-5);
             const [X, A, B, C, D] = pts.map(p => p.v);
             const xa = Math.abs(A-X), ab = Math.abs(B-A)/xa;
-            
-            let m = "";
-            if(ab >= 0.61 && ab <= 0.63) m = "GARTLEY";
-            else if(ab >= 0.38 && ab <= 0.51) m = "BAT";
-            
+
+            let m = (ab >= 0.3 && ab <= 0.7) ? "GARTLEY" : (ab > 0.7 && ab <= 1.1) ? "BAT" : (ab > 1.1 && ab <= 1.4) ? "BUTTERFLY" : "";
             if(m) this.addSignal(s, m, pts);
-        } catch(e){}
+        } catch(e) {}
     },
 
-    async loadInitialData() {
-        const info = await fetch('https://api.binance.com/api/v3/exchangeInfo').then(r=>r.json());
-        this.pairs = info.symbols.filter(s=>s.quoteAsset==='USDT').map(s=>s.symbol);
-        this.startScanner();
+    addSignal(s, m, pts) {
+        if(this.signals.has(s)) return;
+        const cx = canvas.width / 2, cy = canvas.height / 2;
+        const r = (Math.min(cx, cy) - 60) * Math.random() + 20;
+        const a = Math.random() * Math.PI * 2;
+        const colors = { GARTLEY: '#00ff41', BAT: '#00d4ff', BUTTERFLY: '#bf00ff' };
+        
+        const p = { symbol: s, x: cx + r * Math.cos(a), y: cy + r * Math.sin(a), color: colors[m], highlight: true, pts, model: m, hidden: false, isNew: true };
+        this.points.push(p);
+        this.signals.set(s, p);
+        this.foundCount++;
+        document.getElementById('target-count').innerText = `FOUND: ${this.foundCount}`;
+        
+        this.alertSound.play().catch(()=>{});
+
+        const card = document.createElement('div');
+        card.id = `card-${s}`;
+        card.className = 'sig-card'; card.style.borderRightColor = colors[m];
+        card.innerHTML = `<div class="new-target-tag">NEW</div><div><b>${s}</b><br><small style="color:${colors[m]}">${m}</small></div><div>$${pts[4].v.toFixed(2)}</div>`;
+        card.onclick = () => this.showTarget(s);
+        document.getElementById('radar-list').prepend(card);
+
+        this.showTarget(s);
+        setTimeout(() => { p.isNew = false; }, 10000); // إزالة تأثير النبض بعد 10 ثوانٍ
+    },
+
+    liveFilter(val) {
+        const q = val.toUpperCase();
+        this.points.forEach(p => {
+            p.hidden = q !== "" && !p.symbol.includes(q);
+            const card = document.getElementById(`card-${p.symbol}`);
+            if(card) card.style.display = p.hidden ? 'none' : 'flex';
+        });
+    },
+
+    showTarget(s) {
+        const data = this.signals.get(s);
+        if(!data) return;
+        this.points.forEach(p => p.highlight = p.symbol === s);
+        fetch(`https://api.binance.com/api/v3/klines?symbol=${s}&interval=${this.currentTF}&limit=100`)
+        .then(r => r.json()).then(k => {
+            this.candleSeries.setData(k.map(d => ({ time: d[0]/1000, open: +d[1], high: +d[2], low: +d[3], close: +d[4] })));
+            this.drawPattern(data.pts, data.model);
+            this.chart.timeScale().fitContent();
+        });
+    },
+
+    drawPattern(pts, m) {
+        this.activeSeries.forEach(s => this.chart.removeSeries(s));
+        const colors = { GARTLEY: '#00ff41', BAT: '#00d4ff', BUTTERFLY: '#bf00ff' };
+        const line = this.chart.addLineSeries({ color: colors[m], lineWidth: 2 });
+        line.setData(pts.map(p => ({ time: p.t, value: p.v })));
+        this.candleSeries.setMarkers(pts.map((p, i) => ({
+            time: p.t, position: 'aboveBar', color: colors[m], shape: 'arrowDown', text: ['X','A','B','C','D'][i]
+        })));
+        this.activeSeries = [line];
     },
 
     startScanner() {
         let idx = 0;
         const scan = async () => {
+            await this.analyze(this.pairs[idx]);
+            idx = (idx + 1) % this.pairs.length;
+            setTimeout(scan, 1000); // سرعة قصوى: ثانية واحدة بين كل فحص
+        };
+        scan();
+    }
+};
+
+window.onload = () => Sniper.init();
+</script>
+</body>
+</html>
             const batch = this.pairs.slice(idx, idx + 5);
             await Promise.allSettled(batch.map(s => this.analyze(s)));
             idx = (idx + 5) % this.pairs.length;
