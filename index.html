@@ -1,85 +1,59 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>إلى حبيبتي أسماء 🌹</title>
-<!-- إضافة خط عربي مميز من Google Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Scheherazade+New&display=swap" rel="stylesheet">
-<style>
-body {
-    margin: 0;
-    padding: 0;
-    font-family: 'Scheherazade New', serif;
-    background: url('https://i.ibb.co/2N5vVhR/flowers-bg.jpg') no-repeat center center fixed;
-    background-size: cover;
-    color: #fff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    text-align: center;
-    overflow: hidden;
-}
+import ccxt
+import time
 
-.container {
-    background: rgba(0,0,0,0.6);
-    padding: 40px;
-    border-radius: 20px;
-    max-width: 700px;
-    box-shadow: 0 0 30px rgba(0,0,0,0.5);
-}
+# إعداد المنصة
+exchange = ccxt.binance()
 
-h1 {
-    font-size: 3em;
-    margin-bottom: 20px;
-    color: #ffdd00;
-    text-shadow: 2px 2px 6px #000;
-    font-family: 'Scheherazade New', serif;
-}
+def calculate_smart_targets(current_price, high_24h, low_24h):
+    """
+    هذه الدالة تحاكي المنطق الذي ظهر في صورك لحساب الأهداف
+    """
+    # مثال لمنطق حساب الأهداف (يمكنك تعديله حسب استراتيجيتك)
+    entry_price = current_price
+    stop_loss = low_24h * 0.95  # وقف الخسارة تحت أدنى سعر بـ 5%
+    target_price = high_24h * 1.03 # الهدف فوق أعلى سعر بـ 3%
+    
+    return {
+        'entry': round(entry_price, 2),
+        'stop': round(stop_loss, 2),
+        'target': round(target_price, 2)
+    }
 
-p {
-    font-size: 1.5em;
-    line-height: 2em;
-    color: #f0f0f0;
-    font-family: 'Scheherazade New', serif;
-}
+def get_market_summary(symbol):
+    try:
+        # جلب بيانات السوق
+        ticker = exchange.fetch_ticker(symbol)
+        
+        current_price = ticker['last']
+        high_24h = ticker['high']
+        low_24h = ticker['low']
+        change = ticker['percentage']
+        volume = ticker['quoteVolume']
 
-/* ورود متساقطة */
-.flower {
-    position: absolute;
-    width: 50px;
-    height: 50px;
-    background-image: url('https://i.ibb.co/9rZJ1Ph/rose-png.png'); /* وردة شفافة PNG */
-    background-size: contain;
-    background-repeat: no-repeat;
-    animation: fall 12s linear infinite;
-}
+        # حساب الأهداف
+        targets = calculate_smart_targets(current_price, high_24h, low_24h)
 
-@keyframes fall {
-    0% { transform: translateY(-100px) rotate(0deg); }
-    100% { transform: translateY(100vh) rotate(360deg); }
-}
-</style>
-</head>
-<body>
-<div class="container">
-    <h1>إلى حبيبتي أسماء 🌹</h1>
-    <p>
-        أسماءُ يا نورَ العينِ ومهجةَ الفؤادِ،<br>
-        لكِ القلبُ يفيضُ حبّاً وودادِ،<br>
-        كم ليلٍ سهرتُ فيهِ على ذكراكِ،<br>
-        وزهرةُ عمري أنتِ بينَ عبادِ.<br>
-        أحبكِ حبّاً لا يزولُ معَ الأيامِ،<br>
-        ويظلّ العهدُ لكِ ما بقيتُ حيّاً في الأحلامِ.
-    </p>
-</div>
+        # تنسيق المخرجات لتشبه الواجهة في الصور
+        print(f"\n--- {symbol} ---")
+        print(f"السعر الآن: {current_price}")
+        print(f"التغير: {change}%")
+        print(f"السيولة (24h): ${volume:,.0f}")
+        print(f"أعلى سعر: {high_24h} | أدنى سعر: {low_24h}")
+        print("-" * 20)
+        print(f"🎯 دخول: {targets['entry']}")
+        print(f"🛑 وقف: {targets['stop']}")
+        print(f"✅ هدف: {targets['target']}")
+        
+        # رصد الحيتان (مثال بسيط)
+        if volume > 100000000: # إذا تجاوزت السيولة 100 مليون
+            print("⚠️ رصد حيتان: دخول سيولة ضخمة الآن!")
 
-<!-- ورود متساقطة -->
-<div class="flower" style="left:5%; animation-duration:10s;"></div>
-<div class="flower" style="left:25%; animation-duration:12s;"></div>
-<div class="flower" style="left:50%; animation-duration:11s;"></div>
-<div class="flower" style="left:70%; animation-duration:13s;"></div>
-<div class="flower" style="left:85%; animation-duration:9s;"></div>
-</body>
-</html>
+    except Exception as e:
+        print(f"خطأ في جلب بيانات {symbol}: {e}")
+
+# تجربة الكود على العملات التي في صورك
+symbols = ['ZEC/USDT', 'BNB/USDT', 'XRP/USDT', 'TAO/USDT']
+
+for sym in symbols:
+    get_market_summary(sym)
+    time.sleep(1) # لتجنب الحظر من API
