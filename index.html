@@ -1,242 +1,179 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NAYROVEX V20 | Ultimate PRZ Radar LIVE</title>
-<style>
-:root { --bg:#0b0e11; --card:#161a1e; --accent:#ffcc00; --text:#fff; --green:#00ff88; --red:#ff3e3e; }
-body { margin:0; font-family:sans-serif; background:var(--bg); color:var(--text); display:flex; flex-direction:column; height:100vh; overflow:hidden; }
-.top-nav{display:flex; gap:10px; padding:10px; background:var(--card);}
-.top-nav input{flex:1; padding:8px; border-radius:8px; border:1px solid #2b2f36; background:#0b0e11; color:white; outline:none;}
-.top-nav button{padding:8px 15px; border:none; border-radius:8px; background:var(--accent); cursor:pointer; font-weight:bold;}
-.pins-bar{display:flex; gap:10px; padding:10px; overflow-x:auto;}
-.pin{padding:8px 15px; border-radius:20px; border:1px solid #2b2f36; cursor:pointer;}
-.pin.active{border-color:var(--accent); background:#1e2329; color:var(--accent);}
-.display-panel{display:flex; justify-content:space-between; padding:15px; align-items:center;}
-.big-price{font-size:38px; font-weight:bold; color:var(--green);}
-.bias-indicator{font-size:14px; font-weight:bold; background:rgba(255,62,62,0.1); padding:5px 10px; border-radius:5px; color:var(--red);}
-#chart-container{flex:1; position:relative; background:#000;}
-#loader{position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); display:none; color:var(--accent); font-weight:bold; z-index:10;}
-.radar-box{position:absolute; bottom:20px; right:20px; background:rgba(22,26,30,0.9); padding:10px; border-radius:10px; border-right:3px solid var(--accent); z-index:5; font-size:11px;}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NAYROVEX V20 | Elite Sniper</title>
+    <style>
+        :root { --bg: #0b0e11; --card: #161a1e; --accent: #ffcc00; --text: #fff; --green: #00ff88; --red: #ff3e3e; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        
+        /* Model Filter Bar */
+        .models-bar { display: flex; gap: 8px; padding: 10px; background: #1e2329; overflow-x: auto; border-bottom: 1px solid #2b2f36; }
+        .model-btn { padding: 6px 15px; border: 1px solid #2b2f36; border-radius: 8px; cursor: pointer; background: var(--card); color: #848e9c; white-space: nowrap; font-size: 11px; transition: 0.3s; }
+        .model-btn.active { background: var(--accent); color: #000; font-weight: bold; border-color: var(--accent); box-shadow: 0 0 10px rgba(255, 204, 0, 0.3); }
+
+        .top-nav { display: flex; gap: 10px; padding: 10px; background: var(--card); }
+        input { flex: 1; padding: 8px; border-radius: 8px; border: 1px solid #2b2f36; background: #0b0e11; color: white; outline: none; }
+        .btn-scan { padding: 8px 15px; border: none; border-radius: 8px; background: var(--accent); cursor: pointer; font-weight: bold; }
+
+        .pins-bar { display: flex; gap: 10px; padding: 10px; overflow-x: auto; min-height: 70px; border-bottom: 1px solid #1e2329; align-items: center; }
+        .pin { min-width: 110px; padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; animation: fadeIn 0.4s; transition: 0.2s; }
+        .pin:hover { transform: translateY(-3px); border-color: var(--accent); }
+        .pin b { font-size: 13px; display: block; margin-bottom: 3px; }
+        .pin small { font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px; background: rgba(0,0,0,0.3); }
+
+        .display-panel { display: flex; justify-content: space-between; padding: 12px 20px; align-items: center; background: #0b0e11; border-bottom: 1px solid #1e2329; }
+        .big-price { font-size: 30px; font-weight: bold; color: var(--green); }
+        
+        #chart-container { flex: 1; position: relative; background: #000; }
+        #loader { position: absolute; top:50%; left:50%; transform:translate(-50%, -50%); display: none; color: var(--accent); z-index: 10; font-weight: bold; }
+        
+        .empty-msg { color: #444; font-size: 12px; width: 100%; text-align: center; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+    </style>
 </head>
 <body>
 
-<div class="top-nav">
-<input type="text" id="coinInput" placeholder="BTC, ETH, SOL..." onkeypress="if(event.key==='Enter') handleSearch()">
-<button onclick="handleSearch()">رصد 🎯</button>
-</div>
+    <div class="models-bar" id="modelsBar">
+        <div class="model-btn active" onclick="filterByModel('ALL', this)">الكل 🌐</div>
+        <div class="model-btn" onclick="filterByModel('Bat', this)">Bat 🦇</div>
+        <div class="model-btn" onclick="filterByModel('Gartley', this)">Gartley 📉</div>
+        <div class="model-btn" onclick="filterByModel('Butterfly', this)">Butterfly 🦋</div>
+        <div class="model-btn" onclick="filterByModel('Crab', this)">Crab 🦀</div>
+        <div class="model-btn" onclick="filterByModel('Shark', this)">Shark 🦈</div>
+        <div class="model-btn" onclick="filterByModel('Cypher', this)">Cypher 🛡️</div>
+    </div>
 
-<div class="pins-bar" id="pins">
-<div class="pin active" onclick="updateApp('BTCUSDT', this)">BTC</div>
-<div class="pin" onclick="updateApp('ETHUSDT', this)">ETH</div>
-<div class="pin" onclick="updateApp('SOLUSDT', this)">SOL</div>
-</div>
+    <div class="top-nav">
+        <input type="text" id="coinInput" placeholder="بحث يدوي (BTC, SOL, PEPE...)">
+        <button class="btn-scan" onclick="handleSearch()">رصد 🎯</button>
+    </div>
 
-<div class="display-panel">
-<div>
-<span style="font-size:20px;font-weight:bold;" id="currentPair">BTCUSDT</span><br>
-<span class="bias-indicator" id="biasLabel">PRZ Radar Idle</span>
-</div>
-<div class="big-price" id="priceDisplay">0.00</div>
-</div>
+    <div class="pins-bar" id="pins">
+        <div class="empty-msg">بانتظار رصد نماذج Harmonic... 📡</div>
+    </div>
 
-<div id="chart-container">
-<div id="loader">جارٍ التحديث...</div>
-<div id="tv_widget" style="height:100%; width:100%;"></div>
-<div class="radar-box" id="radarNote">PRZ Radar Active</div>
-</div>
+    <div class="display-panel">
+        <div><b id="currentPair" style="font-size: 18px;">BTCUSDT</b><br><small id="status" style="color: var(--accent);">Global Scanner: Live 🟢</small></div>
+        <div class="big-price" id="priceDisplay">0.00</div>
+    </div>
 
-<script src="https://s3.tradingview.com/tv.js"></script>
-<script>
-let tvWidget = null;
-let priceWs = null;
-let pivotPoints = [];
-const zigzagThreshold = 0.005;
-let globalMemory = {};
-let lastAlerts = {};
+    <div id="chart-container">
+        <div id="loader">جارِ تحديث البيانات...</div>
+        <div id="tv_widget" style="height:100%; width:100%;"></div>
+    </div>
 
-// ==================== 1. تهيئة الشارت ====================
-function initChart(symbol='BTCUSDT'){
-    tvWidget = new TradingView.widget({
-        autosize:true,
-        symbol:'BINANCE:'+symbol,
-        interval:'60',
-        theme:'dark',
-        style:'1',
-        locale:'ar',
-        toolbar_bg:'#161a1e',
-        hide_top_toolbar:true,
-        container_id:'tv_widget'
-    });
-}
+    <script src="https://s3.tradingview.com/tv.js"></script>
+    <script>
+        let tvWidget = null, globalWS = null, activeFilter = 'ALL';
+        let globalMemory = {}; 
+        const ZZ_THRESHOLD = 0.02; // 2%
 
-// ==================== 2. تغيير الزوج ====================
-function updateApp(symbol, element){
-    symbol = symbol.toUpperCase();
-    if(!symbol.includes('USDT')) symbol+='USDT';
-    document.getElementById('currentPair').innerText=symbol;
-    if(element){document.querySelectorAll('.pin').forEach(p=>p.classList.remove('active')); element.classList.add('active');}
-    document.getElementById('loader').style.display='block';
-    if(tvWidget && typeof tvWidget.chart==='function'){
-        tvWidget.chart().setSymbol('BINANCE:'+symbol,'60',()=>{ document.getElementById('loader').style.display='none';});
-    }else initChart(symbol);
-    connectPriceSocket(symbol);
-}
+        function initChart(symbol='BTCUSDT') {
+            tvWidget = new TradingView.widget({
+                "autosize": true, "symbol": "BINANCE:"+symbol, "interval": "60",
+                "theme": "dark", "style": "1", "locale": "ar", "container_id": "tv_widget",
+                "hide_top_toolbar": true
+            });
+        }
 
-// ==================== 3. WebSocket مباشر للشموع ====================
-function connectPriceSocket(symbol){
-    if(priceWs) priceWs.close();
-    priceWs = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@kline_1h`);
-    priceWs.onmessage = (e)=>{
-        const data=JSON.parse(e.data);
-        const k=data.k;
-        const price=parseFloat(k.c);
-        document.getElementById('priceDisplay').innerText=price.toLocaleString(undefined,{minimumFractionDigits:2});
-        document.getElementById('priceDisplay').style.color=price>=parseFloat(k.o)?'#00ff88':'#ff3e3e';
-        handlePivot(k);
-    };
-}
+        function isWithin(val, target, tol=0.06) { return Math.abs(val - target) <= tol; }
 
-// ==================== 4. ZigZag Pivot ====================
-function handlePivot(k){
-    const t=k.t/1000;
-    const p=parseFloat(k.c);
-    if(pivotPoints.length<1){pivotPoints.push({time:t, price:p}); return;}
-    const last=pivotPoints[pivotPoints.length-1];
-    if(Math.abs(p-last.price)/last.price>zigzagThreshold) pivotPoints.push({time:t, price:p});
-    if(pivotPoints.length>=5){
-        const pattern=scanForPatterns(pivotPoints.slice(-5));
-        if(pattern) autoDrawPattern(pivotPoints.slice(-5),pattern);
-    }
-}
+        function scanForPatterns(p) {
+            const X=p[0].price, A=p[1].price, B=p[2].price, C=p[3].price, D=p[4].price;
+            const XA=Math.abs(A-X), AB=Math.abs(B-A), BC=Math.abs(C-B), CD=Math.abs(D-C);
+            const rAB=AB/XA, rD=Math.abs(D-X)/XA;
 
-// ==================== 5. Harmonic Scan لكل النماذج ====================
-function isWithinFibo(ratio,target,tol=0.02){return Math.abs(ratio-target)<=tol;}
-function scanForPatterns(points){
-    if(points.length<5) return null;
-    const X=points[0], A=points[1], B=points[2], C=points[3], D=points[4];
-    const XA=Math.abs(A.price-X.price);
-    const AB=Math.abs(B.price-A.price);
-    const BC=Math.abs(C.price-B.price);
-    const CD=Math.abs(D.price-C.price);
-    const retracementAB=AB/XA;
-    const retracementD=Math.abs(D.price-X.price)/XA;
+            if(isWithin(rD, 0.886) && (isWithin(rAB, 0.382) || isWithin(rAB, 0.5))) return {name:'Bat', color:'#ffcc00', bg:'rgba(255, 204, 0, 0.15)'};
+            if(isWithin(rD, 0.786) && isWithin(rAB, 0.618)) return {name:'Gartley', color:'#00ff88', bg:'rgba(0, 255, 136, 0.15)'};
+            if(isWithin(rD, 1.272) && isWithin(rAB, 0.786)) return {name:'Butterfly', color:'#00ccff', bg:'rgba(0, 204, 255, 0.15)'};
+            if(isWithin(rD, 1.618) && isWithin(rAB, 0.886)) return {name:'Crab', color:'#ff33cc', bg:'rgba(255, 51, 204, 0.15)'};
+            if(C > A && isWithin(rD, 1.13, 0.15)) return {name:'Shark', color:'#ffffff', bg:'rgba(255, 255, 255, 0.15)'};
+            if(isWithin(rAB, 0.5, 0.1) && (C > A)) return {name:'Cypher', color:'#ff6600', bg:'rgba(255, 102, 0, 0.15)'};
+            return null;
+        }
 
-    // Bat
-    if((isWithinFibo(retracementAB,0.382)||isWithinFibo(retracementAB,0.5)) && isWithinFibo(retracementD,0.886))
-        return {name:'Bullish Bat', color:'#ffcc00'};
-    // Gartley
-    if(isWithinFibo(retracementAB,0.618)&&isWithinFibo(retracementD,0.786))
-        return {name:'Bullish Gartley', color:'#00ff88'};
-    // Crab
-    if(isWithinFibo(retracementAB,0.618)&&isWithinFibo(retracementD,1.618))
-        return {name:'Bullish Crab', color:'#ff66ff'};
-    // Butterfly
-    if(isWithinFibo(retracementAB,0.786)&&isWithinFibo(retracementD,1.272))
-        return {name:'Bullish Butterfly', color:'#ff9900'};
-    // Shark
-    if(isWithinFibo(retracementAB,0.886)&&isWithinFibo(retracementD,1.13))
-        return {name:'Bullish Shark', color:'#66ffff'};
-    // Cypher
-    if(isWithinFibo(retracementAB,0.382)&&isWithinFibo(retracementD,0.786))
-        return {name:'Bullish Cypher', color:'#ff4444'};
-    return null;
-}
+        function startGlobalScanner() {
+            if(globalWS) globalWS.close();
+            globalWS = new WebSocket('wss://stream.binance.com:9443/ws/!ticker@arr');
+            globalWS.onmessage = (e) => {
+                const data = JSON.parse(e.data).filter(i => i.s.endsWith('USDT'));
+                data.forEach(item => {
+                    const s = item.s, p = parseFloat(item.c);
+                    if(!globalMemory[s]) globalMemory[s] = { pivots: [], patterns: [] };
+                    let m = globalMemory[s];
+                    
+                    if(m.pivots.length === 0 || Math.abs(p - m.pivots[m.pivots.length-1].price)/m.pivots[m.pivots.length-1].price > ZZ_THRESHOLD) {
+                        m.pivots.push({price: p, time: Date.now()});
+                        if(m.pivots.length > 5) {
+                            m.pivots.shift();
+                            const found = scanForPatterns(m.pivots);
+                            if(found && !m.patterns.some(x => x.name === found.name)) {
+                                m.patterns.push(found);
+                                renderPins();
+                                playAlert();
+                            }
+                        }
+                    }
+                    if(s === document.getElementById('currentPair').innerText) updateUI(item);
+                });
+            };
+        }
 
-// ==================== 6. رسم النموذج ====================
-function autoDrawPattern(points,patternInfo){
-    if(tvWidget && typeof tvWidget.chart==='function'){
-        const shapePoints=points.map(p=>({time:p.time, price:p.price}));
-        tvWidget.chart().createMultipointShape(shapePoints,{
-            shape:'polyline',
-            color:patternInfo.color,
-            lineWidth:3,
-            text:patternInfo.name+' (PRZ Found)'
-        });
-        document.getElementById('biasLabel').innerText=patternInfo.name.toUpperCase();
-        document.getElementById('biasLabel').style.background=patternInfo.color+'33';
-        document.getElementById('biasLabel').style.color=patternInfo.color;
-    }
-}
+        function updateUI(item) {
+            const el = document.getElementById('priceDisplay');
+            el.innerText = parseFloat(item.c).toLocaleString(undefined, {minimumFractionDigits: 2});
+            el.style.color = parseFloat(item.p) >= 0 ? "#00ff88" : "#ff3e3e";
+        }
 
-// ==================== 7. البحث اليدوي ====================
-function handleSearch(){
-    const val=document.getElementById('coinInput').value;
-    if(val) updateApp(val,null);
-}
+        function renderPins() {
+            const container = document.getElementById('pins');
+            container.innerHTML = '';
+            let hasAny = false;
+            for(const s in globalMemory) {
+                globalMemory[s].patterns.forEach(pt => {
+                    if(activeFilter === 'ALL' || pt.name === activeFilter) {
+                        hasAny = true;
+                        const div = document.createElement('div');
+                        div.className = 'pin';
+                        div.style.background = pt.bg;
+                        div.style.borderRight = `4px solid ${pt.color}`;
+                        div.innerHTML = `<b>${s}</b><small style="color:${pt.color}">${pt.name}</small>`;
+                        div.onclick = () => {
+                            document.getElementById('currentPair').innerText = s;
+                            if(tvWidget) tvWidget.chart().setSymbol('BINANCE:'+s);
+                        };
+                        container.prepend(div);
+                    }
+                });
+            }
+            if(!hasAny) container.innerHTML = `<div class="empty-msg">لا توجد نماذج ${activeFilter === 'ALL' ? '' : activeFilter} متاحة حالياً...</div>`;
+        }
 
-// ==================== 8. فلتر الدقة العالية ====================
-async function checkPrecisionFilters(symbol, patternType){
-    try{
-        const res=await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}`);
-        const data=await res.json();
-        const priceChange=parseFloat(data.priceChangePercent);
-        const volume=parseFloat(data.quoteVolume);
-        if(volume<1000000) return false;
-        if(patternType.includes('Bullish') && priceChange<-2) return true;
-        if(patternType.includes('Bearish') && priceChange>5) return true;
-        return false;
-    }catch(e){return false;}
-}
+        function filterByModel(m, btn) {
+            activeFilter = m;
+            document.querySelectorAll('.model-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderPins();
+        }
 
-// ==================== 9. تنبيه + Pin ذكي ====================
-async function alertNewPattern(symbol,pattern){
-    const now=Date.now();
-    if(lastAlerts[symbol] && (now-lastAlerts[symbol]<30*60*1000)) return;
-    const precise=await checkPrecisionFilters(symbol, pattern.name);
-    if(!precise) return;
-    lastAlerts[symbol]=now;
+        function playAlert() {
+            const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-software-interface-start-2574.mp3');
+            audio.play().catch(()=>{}); 
+        }
 
-    const list=document.getElementById('pins');
-    let pin=document.getElementById(`pin-${symbol}`);
-    if(!pin){pin=document.createElement('div'); pin.id=`pin-${symbol}`; pin.className='pin'; list.prepend(pin);}
-    pin.style.borderRight=`4px solid ${pattern.color}`;
-    pin.innerHTML=`<b>${symbol}</b><br><small style="color:${pattern.color}">${pattern.name}</small>`;
-    pin.onclick=()=>{
-        updateApp(symbol,pin);
-        setTimeout(()=> drawHarmonicPattern(globalMemory[symbol].pivots, pattern.name),1500);
-    };
-    playAlertSound();
-}
-function playAlertSound(){
-    const audio=new Audio('https://assets.mixkit.co/sfx/preview/mixkit-sci-fi-confirmation-914.mp3');
-    audio.play().catch(()=>{});
-}
-
-// ==================== 10. الماسح العالمي ====================
-async function startGlobalScan(){
-    const globalWS=new WebSocket(`wss://stream.binance.com:9443/ws/!ticker@arr`);
-    globalWS.onmessage=async (e)=>{
-        const data=JSON.parse(e.data).filter(d=>d.s.endsWith('USDT'));
-        for(const pair of data){
-            const symbol=pair.s;
-            const price=parseFloat(pair.c);
-            if(!globalMemory[symbol]) globalMemory[symbol]={pivots:[]};
-            const mem=globalMemory[symbol];
-            const time=Math.floor(Date.now()/1000);
-            if(mem.pivots.length===0) mem.pivots.push({time, price});
-            else{
-                const lastPivot=mem.pivots[mem.pivots.length-1];
-                if(Math.abs(price-lastPivot.price)/lastPivot.price>zigzagThreshold){
-                    mem.pivots.push({time, price});
-                    if(mem.pivots.length>5) mem.pivots.shift();
-                    const pattern=scanForPatterns(mem.pivots);
-                    if(pattern) alertNewPattern(symbol, pattern);
-                }
+        function handleSearch() {
+            const s = document.getElementById('coinInput').value.toUpperCase();
+            if(s) {
+                const pair = s.includes('USDT') ? s : s+'USDT';
+                document.getElementById('currentPair').innerText = pair;
+                if(tvWidget) tvWidget.chart().setSymbol('BINANCE:'+pair);
             }
         }
-    };
-}
 
-// ==================== 11. تشغيل كل شيء عند التحميل ====================
-window.onload=()=>{
-    initChart();
-    connectPriceSocket('btcusdt');
-    startGlobalScan();
-};
-</script>
-
+        window.onload = () => { initChart(); startGlobalScanner(); };
+    </script>
 </body>
 </html>
