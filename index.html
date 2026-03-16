@@ -16,11 +16,13 @@ body { margin:0; font-family:'Tajawal', sans-serif; height:100vh; display:flex; 
 
 .header { display:flex; justify-content:space-between; align-items:center; padding:10px 15px; background:#000; border-bottom:1px solid #111; z-index:100; }
 .logo { font-family:'Orbitron'; font-weight:900; color:var(--neon); font-size:0.85rem; }
-#ws-status { font-size:0.55rem; padding:3px 8px; border-radius:4px; border:1px solid #222; font-family:'Orbitron'; }
+#ws-status { font-size:0.55rem; padding:3px 8px; border-radius:4px; border:1px solid #222; font-family:'Orbitron'; color: #ff3131; }
 
+/* 1️⃣ تطبيق الحل الجذري: حاوية ثابتة بخلفية سوداء إجبارية */
 #chart_container { 
     height:38vh; 
     width:100%; 
+    min-height: 300px;
     background:#000 !important; 
     border-bottom:2px solid #1a1a1a; 
     position:relative;
@@ -49,7 +51,7 @@ body { margin:0; font-family:'Tajawal', sans-serif; height:100vh; display:flex; 
 
 <div class="header">
     <div class="logo">LIANA <span style="color:#fff">V10.5 MAX</span></div>
-    <div id="ws-status" style="color:#ff3131">WS: DISCONNECTED</div>
+    <div id="ws-status">WS: CONNECTING</div>
 </div>
 
 <div id="chart_container"></div>
@@ -74,7 +76,7 @@ body { margin:0; font-family:'Tajawal', sans-serif; height:100vh; display:flex; 
 </div>
 
 <div class="search-box">
-    <input type="text" id="search-input" placeholder="بحث العملة..." oninput="Sniper.filterRadar()">
+    <input type="text" id="search-input" placeholder="بحث سريع عن العملة..." oninput="Sniper.filterRadar()">
 </div>
 
 <div class="radar-list" id="radar-list"></div>
@@ -84,10 +86,9 @@ const Sniper = {
     chart:null, candleSeries:null, activeSeries:[], signals:new Map(), pairs:[], currentTF:'1h',
     audio: new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'),
 
-    async init() {
+    // 2️⃣ إنشاء الشارت بعد استقرار الـ DOM وبتوقيت دقيق
+    init() {
         const container = document.getElementById('chart_container');
-        
-        // تطبيق حل نايرو: الرسم بالتزامن مع تحديث الشاشة لمنع البياض
         requestAnimationFrame(() => {
             this.chart = LightweightCharts.createChart(container, {
                 layout: { backgroundColor: '#000', textColor: '#d1d4dc' },
@@ -96,31 +97,36 @@ const Sniper = {
                 height: container.clientHeight,
                 timeScale: { borderColor: '#1a1a1a', timeVisible: true }
             });
-            this.candleSeries = this.chart.addCandlestickSeries({ upColor: '#00ff41', downColor: '#ff3131', borderVisible: false });
+            this.candleSeries = this.chart.addCandlestickSeries({ 
+                upColor: '#00ff41', downColor: '#ff3131', borderVisible: false 
+            });
             
+            this.chart.timeScale().fitContent();
             this.setupResize();
             this.loadInitialData();
         });
     },
 
+    // 3️⃣ التعامل الديناميكي مع تغيير الحجم
     setupResize() {
-        const container = document.getElementById('chart_container');
         window.addEventListener('resize', () => {
             if(this.chart) {
-                this.chart.applyOptions({ width: container.clientWidth, height: container.clientHeight });
+                const container = document.getElementById('chart_container');
+                this.chart.applyOptions({ 
+                    width: container.clientWidth, 
+                    height: container.clientHeight 
+                });
                 this.chart.timeScale().fitContent();
             }
         });
     },
 
     async loadInitialData() {
-        try {
-            const info = await fetch('https://api.binance.com/api/v3/exchangeInfo').then(r=>r.json());
-            this.pairs = info.symbols.filter(s=>s.quoteAsset==='USDT').map(s=>s.symbol);
-            this.loadPair('BTCUSDT');
-            this.connectWS();
-            this.startScanner();
-        } catch(e) {}
+        const info = await fetch('https://api.binance.com/api/v3/exchangeInfo').then(r=>r.json());
+        this.pairs = info.symbols.filter(s=>s.quoteAsset==='USDT').map(s=>s.symbol);
+        this.loadPair('BTCUSDT');
+        this.connectWS();
+        this.startScanner();
     },
 
     connectWS() {
@@ -132,7 +138,7 @@ const Sniper = {
         ws.onclose = () => setTimeout(() => this.connectWS(), 5000);
     },
 
-    async startScanner() {
+    startScanner() {
         let idx = 0;
         const scan = async () => {
             const batch = this.pairs.slice(idx, idx + 15);
@@ -238,7 +244,8 @@ const Sniper = {
     }
 };
 
-window.onload = () => Sniper.init();
+// 4️⃣ تشغيل الـ init عند تحميل النافذة بالكامل
+window.addEventListener('load', () => Sniper.init());
 </script>
 </body>
 </html>
