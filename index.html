@@ -2,138 +2,239 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>NAYROVEX V28 | Elite Terminal</title>
+    <title>NAYROVEX ELITE TERMINAL</title>
     <style>
         :root {
-            --bg: #080a0c; --card: #11151a; --accent: #ffcc00;
-            --green: #00ff88; --red: #ff3e3e; --text: #ffffff; --dim: #848e9c;
+            --bg: #080a0c;
+            --card: #11151a;
+            --accent: #ffcc00;
+            --green: #00ff88;
+            --red: #ff3e3e;
+            --dim: #848e9c;
         }
-        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        
-        /* التصميم المطابق للصورة */
-        .header { display: flex; gap: 10px; padding: 15px; background: var(--card); border-bottom: 1px solid #1e2329; overflow-x: auto; scrollbar-width: none; }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* شريط النماذج العلوي - مطابق تماماً للصورة */
+        .header {
+            display: flex;
+            gap: 12px;
+            padding: 15px;
+            background: var(--card);
+            border-bottom: 1px solid #1e2329;
+            overflow-x: auto;
+        }
+
         .model-btn {
-            background: #1e2329; border: 1px solid #2b3139; padding: 12px 20px; border-radius: 12px;
-            color: var(--dim); cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 8px; min-width: 140px;
+            background: #1e2329;
+            border: 1px solid #2b3139;
+            padding: 12px 24px;
+            border-radius: 12px;
+            color: var(--dim);
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
         }
-        .model-btn.active { background: rgba(255, 204, 0, 0.1); border-color: var(--accent); color: var(--accent); }
-        .model-btn b { color: var(--accent); font-size: 14px; }
 
-        .search-area { padding: 10px 15px; display: flex; gap: 10px; background: #0b0e11; border-bottom: 1px solid #1e2329; }
-        .search-input { flex: 1; background: #1e2329; border: 1px solid #2b3139; color: white; padding: 12px; border-radius: 10px; outline: none; }
-        .status-tag { background: var(--accent); color: #000; padding: 10px 20px; border-radius: 10px; font-weight: bold; font-size: 13px; }
-
-        .pins-list { display: flex; gap: 12px; padding: 12px 15px; overflow-x: auto; background: var(--bg); min-height: 100px; align-items: center; }
-        .op-card {
-            background: var(--card); padding: 15px; border-radius: 12px; min-width: 160px;
-            border-left: 4px solid var(--accent); cursor: pointer; animation: fadeIn 0.4s ease;
+        .model-btn.active {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
         }
-        .op-card:hover { transform: translateY(-3px); background: #1c2127; }
 
-        .chart-frame { flex: 1; background: #000; position: relative; }
-        .live-price { position: absolute; top: 20px; right: 20px; z-index: 10; font-size: 32px; font-weight: bold; color: var(--green); text-shadow: 0 0 20px rgba(0,255,136,0.3); }
+        /* شريط الرصد والبحث */
+        .search-container {
+            display: flex;
+            gap: 10px;
+            padding: 12px 15px;
+            background: #0b0e11;
+            border-bottom: 1px solid #1e2329;
+        }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+        .scan-tag {
+            background: var(--accent);
+            color: #000;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .search-box {
+            flex: 1;
+            background: #1e2329;
+            border: 1px solid #2b3139;
+            border-radius: 10px;
+            padding: 12px;
+            color: white;
+            outline: none;
+        }
+
+        /* منطقة النتائج (لا توجد نماذج حالياً) */
+        .results-area {
+            padding: 15px;
+            text-align: center;
+            color: #444;
+            font-size: 14px;
+            min-height: 80px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .pin-card {
+            background: var(--card);
+            padding: 15px;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent);
+            min-width: 160px;
+            margin-left: 10px;
+            cursor: pointer;
+            text-align: right;
+        }
+
+        /* الشارت */
+        .chart-box {
+            flex: 1;
+            background: #000;
+            position: relative;
+        }
+
+        .price-label {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+        }
+
+        .price-value {
+            font-size: 35px;
+            font-weight: bold;
+            color: var(--green);
+        }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <button class="model-btn active" onclick="setFilter('ALL', this)">الكل 🌐</button>
-    <button class="model-btn" onclick="setFilter('Cypher', this)">Cypher 🛡️ <b id="c-Cypher">(0)</b></button>
-    <button class="model-btn" onclick="setFilter('Shark', this)">Shark 🦈 <b id="c-Shark">(0)</b></button>
-    <button class="model-btn" onclick="setFilter('Bat', this)">Bat 🦇 <b id="c-Bat">(0)</b></button>
-    <button class="model-btn" onclick="setFilter('Butterfly', this)">Butterfly 🦋 <b id="c-Butterfly">(0)</b></button>
+    <button class="model-btn active" data-m="ALL" onclick="setF('ALL', this)">الكل 🌐</button>
+    <button class="model-btn" data-m="Cypher" onclick="setF('Cypher', this)">Cypher 🛡️ <span id="n-Cypher">(0)</span></button>
+    <button class="model-btn" data-m="Shark" onclick="setF('Shark', this)">Shark 🦈 <span id="n-Shark">(0)</span></button>
+    <button class="model-btn" data-m="Crab" onclick="setF('Crab', this)">Crab 🦀 <span id="n-Crab">(0)</span></button>
+    <button class="model-btn" data-m="Butterfly" onclick="setF('Butterfly', this)">Butterfly 🦋 <span id="n-Butterfly">(0)</span></button>
 </div>
 
-<div class="search-area">
-    <div class="status-tag">رصد 🎯</div>
-    <input type="text" class="search-input" id="sc" placeholder="بحث يدوي (BTC, SOL, PEPE...)" oninput="search()">
+<div class="search-container">
+    <div class="scan-tag">🎯 رصد</div>
+    <input type="text" id="manualS" class="search-box" placeholder="بحث يدوي (BTC, SOL, PEPE...)" oninput="runSearch()">
 </div>
 
-<div class="pins-list" id="pins">
-    <div style="color: #444; font-size: 13px;">جاري الاتصال بـ Binance لرصد الفرص... 📡</div>
+<div class="results-area" id="resArea">
+    لا توجد نماذج متاحة حالياً... 📡
 </div>
 
-<div class="chart-frame" id="chart">
-    <div class="live-price" id="lp">0.00</div>
+<div class="chart-box" id="tv_chart">
+    <div class="price-label">
+        <div id="p-pair" style="font-size: 18px; color: #848e9c;">BTCUSDT</div>
+        <div class="price-value" id="p-val">0.00</div>
+    </div>
 </div>
 
 <script src="https://s3.tradingview.com/tv.js"></script>
 <script>
-    let memory = {}, filter = 'ALL', tv = null, ws = null;
-    const CONFIG = { ZZ: 0.012, VOL: 5000000 };
+    let memory = {}, activeF = 'ALL', tv = null;
 
-    // 1. محرك الهارمونيك (Logic)
-    function scan(p) {
-        const X=p[0].price, A=p[1].price, B=p[2].price, C=p[3].price, D=p[4].price;
+    // محرك الرصد الحقيقي (تأكد من عمل الأزرار)
+    function scanH(p) {
+        const X=p[0].p, A=p[1].p, B=p[2].p, C=p[3].p, D=p[4].p;
         const rAB = Math.abs(B-A)/Math.abs(A-X), rXD = Math.abs(D-X)/Math.abs(A-X);
-        if(Math.abs(rAB-0.44)<0.06 && Math.abs(rXD-0.886)<0.05) return {name:"Bat", color:"#ffcc00"};
-        if(Math.abs(rAB-0.5)<0.1 && C > Math.max(A,X)) return {name:"Cypher", color:"#ff6600"};
-        if(Math.abs(rAB-0.886)<0.08) return {name:"Shark", color:"#00c2ff"};
+        
+        if(Math.abs(rAB-0.44)<0.06 && Math.abs(rXD-0.886)<0.05) return {n:"Bat", c:"#ffcc00"};
+        if(Math.abs(rAB-0.5)<0.1 && C > Math.max(A,X)) return {n:"Cypher", c:"#ff6600"};
+        if(Math.abs(rAB-0.886)<0.08) return {n:"Shark", c:"#00c2ff"};
         return null;
     }
 
-    // 2. تحديث الرادار (Data Processing)
-    async function update(s, p) {
-        if(!memory[s]) memory[s] = {pivots:[], patterns:[]};
-        let m = memory[s];
-        if(m.pivots.length==0 || Math.abs(p-m.pivots[m.pivots.length-1].price)/m.pivots[m.pivots.length-1].price > CONFIG.ZZ) {
-            m.pivots.push({price:p});
-            if(m.pivots.length > 5) {
-                m.pivots.shift(); let pat = scan(m.pivots);
-                if(pat && !m.patterns.some(x=>x.name===pat.name)) {
-                    m.patterns.push(pat);
-                    render();
-                }
-            }
-        }
+    function setF(m, btn) {
+        activeF = m;
+        document.querySelectorAll('.model-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        refreshUI();
     }
 
-    // 3. الواجهة (UI)
-    function render() {
-        const list = document.getElementById("pins");
-        list.innerHTML = "";
-        let counts = {Cypher:0, Shark:0, Bat:0, Butterfly:0};
+    function refreshUI() {
+        const area = document.getElementById("resArea");
+        area.innerHTML = "";
+        let count = 0;
+        let cMap = {Cypher:0, Shark:0, Crab:0, Butterfly:0, Bat:0};
 
         for(let s in memory) {
             memory[s].patterns.forEach(p => {
-                if(counts[p.name] !== undefined) counts[p.name]++;
-                if(filter === 'ALL' || p.name === filter) {
+                if(cMap[p.n] !== undefined) cMap[p.n]++;
+                if(activeF === 'ALL' || p.n === activeF) {
+                    count++;
                     const card = document.createElement("div");
-                    card.className = "op-card";
-                    card.style.borderLeftColor = p.color;
-                    card.innerHTML = `<b>${s}</b><br><small style="color:${p.color}">${p.name}</small>`;
-                    card.onclick = () => { tv.chart().setSymbol("BINANCE:"+s); document.getElementById('lp').innerText = s; };
-                    list.prepend(card);
+                    card.className = "pin-card";
+                    card.innerHTML = `<b>${s}</b><br><small style="color:${p.c}">${p.n}</small>`;
+                    card.onclick = () => { tv.chart().setSymbol("BINANCE:"+s); document.getElementById('p-pair').innerText = s; };
+                    area.appendChild(card);
                 }
             });
         }
-        for(let m in counts) document.getElementById(`c-${m}`).innerText = `(${counts[m]})`;
+        for(let key in cMap) {
+            let el = document.getElementById(`n-${key}`);
+            if(el) el.innerText = `(${cMap[key]})`;
+        }
+        if(count === 0) area.innerHTML = `لا توجد نماذج ${activeF === 'ALL' ? '' : activeF} متاحة حالياً...`;
     }
 
-    function setFilter(m, btn) {
-        filter = m;
-        document.querySelectorAll('.model-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        render();
-    }
-
-    function startWS() {
-        ws = new WebSocket("wss://stream.binance.com:9443/ws/!ticker@arr");
+    function startRadar() {
+        const ws = new WebSocket("wss://stream.binance.com:9443/ws/!ticker@arr");
         ws.onmessage = e => {
             JSON.parse(e.data).forEach(i => {
-                if(i.s.endsWith("USDT") && parseFloat(i.q) > CONFIG.VOL) {
-                    update(i.s, parseFloat(i.c));
-                    if(i.s === "BTCUSDT") document.getElementById('lp').innerText = parseFloat(i.c).toLocaleString();
+                if(i.s.endsWith("USDT") && parseFloat(i.q) > 5000000) {
+                    let s = i.s, p = parseFloat(i.c);
+                    if(!memory[s]) memory[s] = {pivots:[], patterns:[]};
+                    let m = memory[s];
+                    if(m.pivots.length==0 || Math.abs(p-m.pivots[m.pivots.length-1].p)/m.pivots[m.pivots.length-1].p > 0.012) {
+                        m.pivots.push({p:p});
+                        if(m.pivots.length > 5) {
+                            m.pivots.shift();
+                            let pat = scanH(m.pivots);
+                            if(pat && !m.patterns.some(x=>x.n===pat.n)) {
+                                m.patterns.push(pat);
+                                refreshUI();
+                            }
+                        }
+                    }
+                    if(s === document.getElementById('p-pair').innerText) {
+                        document.getElementById('p-val').innerText = p.toLocaleString();
+                    }
                 }
             });
         };
     }
 
     window.onload = () => {
-        tv = new TradingView.widget({ autosize:true, symbol:"BINANCE:BTCUSDT", interval:"60", theme:"dark", container_id:"chart", style:"1" });
-        startWS();
+        tv = new TradingView.widget({
+            autosize: true, symbol: "BINANCE:BTCUSDT", interval: "60",
+            theme: "dark", container_id: "tv_chart", style: "1"
+        });
+        startRadar();
     };
 </script>
 </body>
