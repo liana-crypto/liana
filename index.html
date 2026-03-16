@@ -2,178 +2,184 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NAYROVEX V20 | Elite Sniper</title>
+    <title>NAYROVEX V26 | AI Sniper Pro</title>
     <style>
-        :root { --bg: #0b0e11; --card: #161a1e; --accent: #ffcc00; --text: #fff; --green: #00ff88; --red: #ff3e3e; }
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        :root { --bg: #0b0e11; --card: #161a1e; --accent: #ffcc00; --green: #00ff88; --red: #ff3e3e; --text: #ffffff; }
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        /* Model Filter Bar */
-        .models-bar { display: flex; gap: 8px; padding: 10px; background: #1e2329; overflow-x: auto; border-bottom: 1px solid #2b2f36; }
-        .model-btn { padding: 6px 15px; border: 1px solid #2b2f36; border-radius: 8px; cursor: pointer; background: var(--card); color: #848e9c; white-space: nowrap; font-size: 11px; transition: 0.3s; }
-        .model-btn.active { background: var(--accent); color: #000; font-weight: bold; border-color: var(--accent); box-shadow: 0 0 10px rgba(255, 204, 0, 0.3); }
-
-        .top-nav { display: flex; gap: 10px; padding: 10px; background: var(--card); }
-        input { flex: 1; padding: 8px; border-radius: 8px; border: 1px solid #2b2f36; background: #0b0e11; color: white; outline: none; }
-        .btn-scan { padding: 8px 15px; border: none; border-radius: 8px; background: var(--accent); cursor: pointer; font-weight: bold; }
-
-        .pins-bar { display: flex; gap: 10px; padding: 10px; overflow-x: auto; min-height: 70px; border-bottom: 1px solid #1e2329; align-items: center; }
-        .pin { min-width: 110px; padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; animation: fadeIn 0.4s; transition: 0.2s; }
-        .pin:hover { transform: translateY(-3px); border-color: var(--accent); }
-        .pin b { font-size: 13px; display: block; margin-bottom: 3px; }
-        .pin small { font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px; background: rgba(0,0,0,0.3); }
-
-        .display-panel { display: flex; justify-content: space-between; padding: 12px 20px; align-items: center; background: #0b0e11; border-bottom: 1px solid #1e2329; }
-        .big-price { font-size: 30px; font-weight: bold; color: var(--green); }
+        /* شريط التحكم */
+        .header-tools { display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--card); border-bottom: 1px solid #222; }
+        input#searchCoin { background: #0b0e11; border: 1px solid #333; color: white; padding: 8px; border-radius: 8px; flex: 1; outline: none; }
         
-        #chart-container { flex: 1; position: relative; background: #000; }
-        #loader { position: absolute; top:50%; left:50%; transform:translate(-50%, -50%); display: none; color: var(--accent); z-index: 10; font-weight: bold; }
+        .models-bar { display: flex; gap: 8px; padding: 10px; background: #12161c; overflow-x: auto; scrollbar-width: none; }
+        button { background: #2b2f36; border: 1px solid #444; padding: 8px 15px; border-radius: 8px; cursor: pointer; color: #848e9c; font-weight: bold; white-space: nowrap; transition: 0.2s; }
+        button.active { background: var(--accent); color: #000; border-color: var(--accent); }
         
-        .empty-msg { color: #444; font-size: 12px; width: 100%; text-align: center; }
+        /* قسم الدبابيس والفرص */
+        .top-info { display: flex; flex-direction: column; background: #0b0e11; }
+        .pins { display: flex; gap: 10px; padding: 10px; overflow-x: auto; min-height: 85px; }
+        .pin { background: var(--card); padding: 12px; border-radius: 10px; min-width: 130px; cursor: pointer; border-right: 4px solid var(--accent); animation: fade .3s; position: relative; }
+        .pin:hover { background: #1e2329; transform: translateY(-2px); }
+        .pin .badge { position: absolute; top: 5px; left: 5px; font-size: 10px; background: #333; padding: 2px 5px; border-radius: 4px; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        .chart-container { flex: 1; background: #000; }
+        
+        .footer-panel { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: var(--card); border-top: 1px solid #222; }
+        .price { font-size: 26px; font-weight: bold; color: var(--green); }
+        
+        @keyframes fade { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <div class="models-bar" id="modelsBar">
-        <div class="model-btn active" onclick="filterByModel('ALL', this)">الكل 🌐</div>
-        <div class="model-btn" onclick="filterByModel('Bat', this)">Bat 🦇</div>
-        <div class="model-btn" onclick="filterByModel('Gartley', this)">Gartley 📉</div>
-        <div class="model-btn" onclick="filterByModel('Butterfly', this)">Butterfly 🦋</div>
-        <div class="model-btn" onclick="filterByModel('Crab', this)">Crab 🦀</div>
-        <div class="model-btn" onclick="filterByModel('Shark', this)">Shark 🦈</div>
-        <div class="model-btn" onclick="filterByModel('Cypher', this)">Cypher 🛡️</div>
+<div class="header-tools">
+    <input type="text" id="searchCoin" placeholder="بحث عن عملة (مثال: SOL, BTC)..." oninput="manualSearch()">
+    <div id="setupCount" style="font-size: 12px; color: var(--accent);">0 نماذج مكتشفة</div>
+</div>
+
+<div class="models-bar" id="modBar">
+    <button data-model="ALL" class="active" onclick="filterModels('ALL', this)">الكل 🌐</button>
+    <button data-model="Bat" onclick="filterModels('Bat', this)">Bat 🦇</button>
+    <button data-model="Gartley" onclick="filterModels('Gartley', this)">Gartley</button>
+    <button data-model="Cypher" onclick="filterModels('Cypher', this)">Cypher</button>
+    <button data-model="Shark" onclick="filterModels('Shark', this)">Shark</button>
+</div>
+
+<div class="top-info">
+    <div class="pins" id="pins"></div>
+</div>
+
+<div class="chart-container" id="tv_chart"></div>
+
+<div class="footer-panel">
+    <div>
+        <b id="pairDisplay" style="font-size: 18px;">BTCUSDT</b><br>
+        <small id="trendStatus" style="color: #848e9c;">الرادار يعمل بكفاءة 85%</small>
     </div>
+    <div class="price" id="priceDisplay">0.00</div>
+</div>
 
-    <div class="top-nav">
-        <input type="text" id="coinInput" placeholder="بحث يدوي (BTC, SOL, PEPE...)">
-        <button class="btn-scan" onclick="handleSearch()">رصد 🎯</button>
-    </div>
+<script src="https://s3.tradingview.com/tv.js"></script>
+<script>
+const CONFIG = { ZZ_THRESHOLD: 0.012, MIN_VOLUME: 5000000, EMA_PERIOD: 200, TOLERANCE: 0.07 };
+let memory = {}, activeFilter = 'ALL', ws = null, tv = null, lastCheck = {};
 
-    <div class="pins-bar" id="pins">
-        <div class="empty-msg">بانتظار رصد نماذج Harmonic... 📡</div>
-    </div>
+// --- 1. المحرك الرياضي (EMA & RSI) ---
+function EMA(d, p) { let k = 2/(p+1), ema = d[0]; for(let i=1; i<d.length; i++) ema = d[i]*k + ema*(1-k); return ema; }
+function RSI(ps, p=14) {
+    let g=0, l=0; for(let i=ps.length-p; i<ps.length; i++) { let d=ps[i]-ps[i-1]; d>0?g+=d:l+=Math.abs(d); }
+    return l===0 ? 100 : 100-(100/(1+(g/l)));
+}
 
-    <div class="display-panel">
-        <div><b id="currentPair" style="font-size: 18px;">BTCUSDT</b><br><small id="status" style="color: var(--accent);">Global Scanner: Live 🟢</small></div>
-        <div class="big-price" id="priceDisplay">0.00</div>
-    </div>
+// --- 2. كاشف النماذج (XABCD) ---
+function scan(p) {
+    const X=p[0].price, A=p[1].price, B=p[2].price, C=p[3].price, D=p[4].price;
+    const rAB = Math.abs(B-A)/Math.abs(A-X), rXD = Math.abs(D-X)/Math.abs(A-X);
+    
+    if(Math.abs(rAB-0.44)<0.06 && Math.abs(rXD-0.886)<0.05) return {name:"Bat 🦇", color:"#ffcc00", type:D<C?"Bullish":"Bearish"};
+    if(Math.abs(rAB-0.618)<0.05 && Math.abs(rXD-0.786)<0.05) return {name:"Gartley", color:"#00ff88", type:D<C?"Bullish":"Bearish"};
+    if(Math.abs(rAB-0.5)<0.1 && C>Math.max(A,X)) return {name:"Cypher", color:"#ff6600", type:D<C?"Bullish":"Bearish"};
+    if(Math.abs(rAB-0.886)<0.08) return {name:"Shark", color:"#00c2ff", type:D<C?"Bullish":"Bearish"};
+    return null;
+}
 
-    <div id="chart-container">
-        <div id="loader">جارِ تحديث البيانات...</div>
-        <div id="tv_widget" style="height:100%; width:100%;"></div>
-    </div>
+// --- 3. الفلترة والحماية (API Cache) ---
+async function validate(symbol, type) {
+    if(Date.now() - (lastCheck[symbol] || 0) < 60000) return true; // Cache 1 min
+    lastCheck[symbol] = Date.now();
+    try {
+        const r = await fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=1h&limit=120`);
+        const d = await r.json(); const c = d.map(x=>parseFloat(x[4]));
+        const ema = EMA(c, 200), rsi = RSI(c); const cp = c[c.length-1];
+        return type==="Bullish" ? (cp > ema && rsi < 65) : (cp < ema && rsi > 35);
+    } catch(e) { return false; }
+}
 
-    <script src="https://s3.tradingview.com/tv.js"></script>
-    <script>
-        let tvWidget = null, globalWS = null, activeFilter = 'ALL';
-        let globalMemory = {}; 
-        const ZZ_THRESHOLD = 0.02; // 2%
-
-        function initChart(symbol='BTCUSDT') {
-            tvWidget = new TradingView.widget({
-                "autosize": true, "symbol": "BINANCE:"+symbol, "interval": "60",
-                "theme": "dark", "style": "1", "locale": "ar", "container_id": "tv_widget",
-                "hide_top_toolbar": true
-            });
-        }
-
-        function isWithin(val, target, tol=0.06) { return Math.abs(val - target) <= tol; }
-
-        function scanForPatterns(p) {
-            const X=p[0].price, A=p[1].price, B=p[2].price, C=p[3].price, D=p[4].price;
-            const XA=Math.abs(A-X), AB=Math.abs(B-A), BC=Math.abs(C-B), CD=Math.abs(D-C);
-            const rAB=AB/XA, rD=Math.abs(D-X)/XA;
-
-            if(isWithin(rD, 0.886) && (isWithin(rAB, 0.382) || isWithin(rAB, 0.5))) return {name:'Bat', color:'#ffcc00', bg:'rgba(255, 204, 0, 0.15)'};
-            if(isWithin(rD, 0.786) && isWithin(rAB, 0.618)) return {name:'Gartley', color:'#00ff88', bg:'rgba(0, 255, 136, 0.15)'};
-            if(isWithin(rD, 1.272) && isWithin(rAB, 0.786)) return {name:'Butterfly', color:'#00ccff', bg:'rgba(0, 204, 255, 0.15)'};
-            if(isWithin(rD, 1.618) && isWithin(rAB, 0.886)) return {name:'Crab', color:'#ff33cc', bg:'rgba(255, 51, 204, 0.15)'};
-            if(C > A && isWithin(rD, 1.13, 0.15)) return {name:'Shark', color:'#ffffff', bg:'rgba(255, 255, 255, 0.15)'};
-            if(isWithin(rAB, 0.5, 0.1) && (C > A)) return {name:'Cypher', color:'#ff6600', bg:'rgba(255, 102, 0, 0.15)'};
-            return null;
-        }
-
-        function startGlobalScanner() {
-            if(globalWS) globalWS.close();
-            globalWS = new WebSocket('wss://stream.binance.com:9443/ws/!ticker@arr');
-            globalWS.onmessage = (e) => {
-                const data = JSON.parse(e.data).filter(i => i.s.endsWith('USDT'));
-                data.forEach(item => {
-                    const s = item.s, p = parseFloat(item.c);
-                    if(!globalMemory[s]) globalMemory[s] = { pivots: [], patterns: [] };
-                    let m = globalMemory[s];
-                    
-                    if(m.pivots.length === 0 || Math.abs(p - m.pivots[m.pivots.length-1].price)/m.pivots[m.pivots.length-1].price > ZZ_THRESHOLD) {
-                        m.pivots.push({price: p, time: Date.now()});
-                        if(m.pivots.length > 5) {
-                            m.pivots.shift();
-                            const found = scanForPatterns(m.pivots);
-                            if(found && !m.patterns.some(x => x.name === found.name)) {
-                                m.patterns.push(found);
-                                renderPins();
-                                playAlert();
-                            }
-                        }
-                    }
-                    if(s === document.getElementById('currentPair').innerText) updateUI(item);
-                });
-            };
-        }
-
-        function updateUI(item) {
-            const el = document.getElementById('priceDisplay');
-            el.innerText = parseFloat(item.c).toLocaleString(undefined, {minimumFractionDigits: 2});
-            el.style.color = parseFloat(item.p) >= 0 ? "#00ff88" : "#ff3e3e";
-        }
-
-        function renderPins() {
-            const container = document.getElementById('pins');
-            container.innerHTML = '';
-            let hasAny = false;
-            for(const s in globalMemory) {
-                globalMemory[s].patterns.forEach(pt => {
-                    if(activeFilter === 'ALL' || pt.name === activeFilter) {
-                        hasAny = true;
-                        const div = document.createElement('div');
-                        div.className = 'pin';
-                        div.style.background = pt.bg;
-                        div.style.borderRight = `4px solid ${pt.color}`;
-                        div.innerHTML = `<b>${s}</b><small style="color:${pt.color}">${pt.name}</small>`;
-                        div.onclick = () => {
-                            document.getElementById('currentPair').innerText = s;
-                            if(tvWidget) tvWidget.chart().setSymbol('BINANCE:'+s);
-                        };
-                        container.prepend(div);
-                    }
-                });
-            }
-            if(!hasAny) container.innerHTML = `<div class="empty-msg">لا توجد نماذج ${activeFilter === 'ALL' ? '' : activeFilter} متاحة حالياً...</div>`;
-        }
-
-        function filterByModel(m, btn) {
-            activeFilter = m;
-            document.querySelectorAll('.model-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            renderPins();
-        }
-
-        function playAlert() {
-            const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-software-interface-start-2574.mp3');
-            audio.play().catch(()=>{}); 
-        }
-
-        function handleSearch() {
-            const s = document.getElementById('coinInput').value.toUpperCase();
-            if(s) {
-                const pair = s.includes('USDT') ? s : s+'USDT';
-                document.getElementById('currentPair').innerText = pair;
-                if(tvWidget) tvWidget.chart().setSymbol('BINANCE:'+pair);
+// --- 4. الرادار ومعالجة البيانات ---
+async function updateRadar(s, p) {
+    if(!memory[s]) memory[s] = {pivots:[], patterns:[]};
+    let m = memory[s];
+    if(m.pivots.length==0 || Math.abs(p-m.pivots[m.pivots.length-1].price)/m.pivots[m.pivots.length-1].price > CONFIG.ZZ_THRESHOLD) {
+        m.pivots.push({price:p});
+        if(m.pivots.length > 5) {
+            m.pivots.shift(); let pat = scan(m.pivots);
+            if(pat && !m.patterns.some(x=>x.name===pat.name)) {
+                if(await validate(s, pat.type)) {
+                    m.patterns.push(pat); renderPins(); updateCounters(); playAlert();
+                }
             }
         }
+    }
+}
 
-        window.onload = () => { initChart(); startGlobalScanner(); };
-    </script>
+function startScanner() {
+    ws = new WebSocket("wss://stream.binance.com:9443/ws/!ticker@arr");
+    ws.onmessage = e => {
+        JSON.parse(e.data).forEach(i => {
+            if(i.s.endsWith("USDT") && parseFloat(i.q) > CONFIG.MIN_VOLUME) {
+                updateRadar(i.s, parseFloat(i.c)).catch(()=>{});
+                if(i.s === document.getElementById("pairDisplay").innerText) {
+                    document.getElementById("priceDisplay").innerText = parseFloat(i.c).toLocaleString();
+                }
+            }
+        });
+    };
+}
+
+// --- 5. الواجهة والتحكم ---
+function renderPins() {
+    const container = document.getElementById("pins"); container.innerHTML = "";
+    let count = 0;
+    for(let s in memory) {
+        memory[s].patterns.forEach(p => {
+            if(activeFilter==="ALL" || p.name.includes(activeFilter)) {
+                count++;
+                const div = document.createElement("div"); div.className="pin";
+                div.style.borderRight=`4px solid ${p.color}`;
+                div.innerHTML=`<div class="badge">${p.type}</div><b>${s}</b><small>${p.name}</small>`;
+                div.onclick=() => { 
+                    document.getElementById("pairDisplay").innerText=s;
+                    if(tv && tv.chart) tv.chart().setSymbol("BINANCE:"+s);
+                };
+                container.prepend(div);
+            }
+        });
+    }
+    document.getElementById("setupCount").innerText = `${count} نماذج مكتشفة`;
+}
+
+function manualSearch() {
+    let s = document.getElementById("searchCoin").value.toUpperCase();
+    if(s.length > 2) {
+        if(!s.endsWith("USDT")) s += "USDT";
+        document.getElementById("pairDisplay").innerText = s;
+        if(tv && tv.chart) tv.chart().setSymbol("BINANCE:"+s);
+    }
+}
+
+function updateCounters() {
+    ['Bat','Gartley','Cypher','Shark'].forEach(m => {
+        const btn = document.querySelector(`button[data-model="${m}"]`);
+        if(btn) {
+            let c = 0;
+            for(let s in memory) c += memory[s].patterns.filter(p=>p.name.includes(m)).length;
+            btn.innerText = `${m} (${c})`;
+        }
+    });
+}
+
+function filterModels(m, btn) {
+    activeFilter = m;
+    document.querySelectorAll('.models-bar button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active'); renderPins();
+}
+
+function playAlert() { new Audio('https://assets.mixkit.co/sfx/preview/mixkit-software-interface-start-2574.mp3').play().catch(()=>{}); }
+
+window.onload = () => {
+    tv = new TradingView.widget({ autosize:true, symbol:"BINANCE:BTCUSDT", interval:"60", theme:"dark", container_id:"tv_chart" });
+    startScanner();
+};
+</script>
 </body>
 </html>
