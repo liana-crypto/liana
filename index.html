@@ -1,184 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>V13 Ultimate Radar Sniper | NayroVex Elite</title>
-    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
-    <style>
-        :root {
-            --bg-dark: #0a0b0d;
-            --card-bg: #14171a;
-            --accent-gold: #c5a059;
-            --neon-blue: #00f2ff;
-            --text-gray: #848e9c;
-            /* Colors for Harmonic Patterns */
-            --color-gartley: #ff4d4d;
-            --color-bat: #ffda79;
-            --color-butterfly: #706fd3;
-            --color-crab: #33d9b2;
-            --color-deepcrab: #ef5777;
-            --color-shark: #4bcffa;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>V13 Ultimate Radar Sniper | NayroVex Elite</title>
+<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+<style>
+:root {
+    --bg-dark: #0a0b0d;
+    --card-bg: #14171a;
+    --accent-gold: #c5a059;
+    --neon-blue: #00f2ff;
+    --text-gray: #848e9c;
+    --color-gartley: #ff4d4d;
+    --color-bat: #ffda79;
+    --color-butterfly: #706fd3;
+    --color-crab: #33d9b2;
+    --color-deepcrab: #ef5777;
+    --color-shark: #4bcffa;
+}
 
-        body {
-            background-color: var(--bg-dark);
-            color: white;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
+body {
+    margin: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg-dark); color: white; display: flex; flex-direction: column; height: 100vh;
+}
 
-        /* 1. Status Bar */
-        #status-bar {
-            background: #1e2329;
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #2b2f36;
-            font-size: 14px;
-        }
+#status-bar {
+    background: #1e2329; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center;
+    font-size: 14px; border-bottom: 1px solid #2b2f36;
+}
+.status-item { display: flex; align-items: center; gap: 8px; }
+.pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: #02c076; box-shadow: 0 0 10px #02c076; animation: pulse 1.5s infinite; }
 
-        .status-item { display: flex; align-items: center; gap: 8px; }
-        .pulse-dot {
-            width: 8px; height: 8px;
-            background: #02c076;
-            border-radius: 50%;
-            box-shadow: 0 0 10px #02c076;
-            animation: pulse 1.5s infinite;
-        }
+.main-container {
+    display: grid; grid-template-columns: 350px 1fr 300px; flex-grow: 1; gap: 1px; background: #2b2f36;
+}
 
-        /* 2. Layout Grid */
-        .main-container {
-            display: grid;
-            grid-template-columns: 350px 1fr 300px;
-            flex-grow: 1;
-            gap: 1px;
-            background: #2b2f36;
-        }
+#radar-container {
+    background: var(--bg-dark); display: flex; flex-direction: column; padding: 15px;
+}
 
-        /* 3. Radar Section */
-        #radar-container {
-            background: var(--bg-dark);
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            padding: 15px;
-        }
+.pattern-tabs { display: grid; grid-template-columns: repeat(3,1fr); gap:5px; margin-bottom:10px; }
+.tab-btn { background:#1e2329; border:1px solid #2b2f36; color: var(--text-gray); padding:8px; font-size:11px; cursor:pointer; transition:.3s; text-transform:uppercase; }
+.tab-btn.active { border-color: var(--neon-blue); color:white; background:#2b2f36; }
 
-        .radar-canvas-wrapper {
-            position: relative;
-            width: 100%;
-            aspect-ratio: 1;
-            border: 1px solid #2b2f36;
-            border-radius: 50%;
-            background: radial-gradient(circle, #1a1d23 0%, #0a0b0d 100%);
-            overflow: hidden;
-        }
+#search-box { background:#1e2329; border:1px solid #2b2f36; color:white; padding:8px; margin-bottom:10px; outline:none; }
 
-        .radar-sweep {
-            position: absolute;
-            width: 100%; height: 100%;
-            background: conic-gradient(from 0deg, transparent 0%, rgba(0, 242, 255, 0.1) 50%, transparent 100%);
-            animation: rotate 4s linear infinite;
-        }
+#radar-list { flex-grow:1; overflow-y:auto; display:flex; flex-direction:column; gap:10px; }
 
-        /* 4. Tabs & Patterns */
-        .pattern-tabs {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 5px;
-            margin-bottom: 15px;
-        }
+.signal-card { background: var(--card-bg); border-left:4px solid var(--accent-gold); padding:12px; cursor:pointer; position:relative; animation: slideIn 0.4s ease-out; }
+.signal-card:hover { background:#1c2024; }
+.signal-card.new::after { content:"NEW"; position:absolute; right:10px; top:10px; background:#02c076; font-size:10px; padding:2px 5px; border-radius:3px; }
 
-        .tab-btn {
-            background: #1e2329;
-            border: 1px solid #2b2f36;
-            color: var(--text-gray);
-            padding: 8px;
-            font-size: 11px;
-            cursor: pointer;
-            transition: 0.3s;
-            text-transform: uppercase;
-        }
+#chart-section { background: var(--bg-dark); position:relative; }
+#tv-chart { width:100%; height:100%; }
 
-        .tab-btn.active { border-color: var(--neon-blue); color: white; background: #2b2f36; }
+.radar-canvas-wrapper { position: relative; width:100%; aspect-ratio:1; border-radius:50%; background: radial-gradient(circle, #1a1d23 0%, #0a0b0d 100%); overflow:hidden; border:1px solid #2b2f36; }
+.radar-sweep { position:absolute; width:100%; height:100%; background: conic-gradient(from 0deg, transparent 0%, rgba(0,242,255,0.1) 50%, transparent 100%); animation: rotate 4s linear infinite; }
 
-        /* 5. Search & List */
-        #search-box {
-            background: #1e2329;
-            border: 1px solid #2b2f36;
-            color: white;
-            padding: 10px;
-            width: calc(100% - 22px);
-            margin-bottom: 10px;
-            outline: none;
-        }
+.loading-overlay {
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    background: rgba(0,0,0,0.6); color:white; font-size:16px; display:flex; align-items:center; justify-content:center; z-index:100;
+    display:none;
+}
 
-        #radar-list {
-            flex-grow: 1;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .signal-card {
-            background: var(--card-bg);
-            border-left: 4px solid var(--accent-gold);
-            padding: 12px;
-            cursor: pointer;
-            animation: slideIn 0.4s ease-out;
-            position: relative;
-        }
-
-        .signal-card:hover { background: #1c2024; }
-        .signal-card.new::after {
-            content: "NEW";
-            position: absolute;
-            right: 10px; top: 10px;
-            background: #02c076;
-            font-size: 10px;
-            padding: 2px 5px;
-            border-radius: 3px;
-        }
-
-        /* 6. Chart Section */
-        #chart-section {
-            background: var(--bg-dark);
-            position: relative;
-        }
-
-        #tv-chart {
-            width: 100%;
-            height: 100%;
-        }
-
-        /* Animations */
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
-        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        @keyframes slideIn { from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #2b2f36; border-radius: 10px; }
-    </style>
+@keyframes pulse {0%{opacity:1;}50%{opacity:0.4;}100%{opacity:1;}}
+@keyframes rotate {from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+@keyframes slideIn {from{transform:translateX(-20px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+::-webkit-scrollbar {width:5px;}
+::-webkit-scrollbar-thumb{background:#2b2f36;border-radius:10px;}
+</style>
 </head>
 <body>
 
 <div id="status-bar">
-    <div class="status-item">
-        <div class="pulse-dot"></div>
-        <span>SYSTEM ONLINE: <b id="pairs-count">0</b> PAIRS SCANNED</span>
-    </div>
-    <div class="status-item" style="color: var(--accent-gold);">
-        V13 ULTIMATE RADAR SNIPER
-    </div>
+    <div class="status-item"><div class="pulse-dot"></div><span>SYSTEM ONLINE: <b id="pairs-count">0</b> PAIRS SCANNED</span></div>
+    <div class="status-item" style="color: var(--accent-gold);">V13 ULTIMATE RADAR SNIPER</div>
     <div id="clock">00:00:00</div>
 </div>
 
@@ -194,188 +91,134 @@
         </div>
 
         <input type="text" id="search-box" placeholder="Search Symbol (e.g. BTC)..." oninput="filterSignals()">
-
-        <div id="radar-list">
-            </div>
+        <div id="radar-list"></div>
     </div>
 
     <div id="chart-section">
         <div id="tv-chart"></div>
+        <div class="loading-overlay" id="loading-overlay">Extracting Data...</div>
     </div>
 
-    <div style="background: var(--bg-dark); padding: 15px; border-left: 1px solid #2b2f36;">
-        <h4 style="text-align: center; color: var(--text-gray); margin-top: 0;">VISUAL RADAR</h4>
-        <div class="radar-canvas-wrapper" id="radar-map">
-            <div class="radar-sweep"></div>
-            </div>
-        <div style="margin-top: 20px; font-size: 12px; color: var(--text-gray);">
+    <div style="background: var(--bg-dark); padding: 15px; border-left:1px solid #2b2f36;">
+        <h4 style="text-align:center;color:var(--text-gray);margin-top:0;">VISUAL RADAR</h4>
+        <div class="radar-canvas-wrapper" id="radar-map"><div class="radar-sweep"></div></div>
+        <div style="margin-top:20px;font-size:12px;color:var(--text-gray);">
             <p>• Colored dots represent specific patterns.</p>
-            <p>• Pulse indicates a fresh signal (< 1 min).</p>
+            <p>• Pulse indicates a fresh signal (&lt; 1 min).</p>
         </div>
     </div>
 </div>
 
 <script>
-    // --- Configuration & State ---
-    const MODELS = ['GARTLEY', 'BAT', 'BUTTERFLY', 'CRAB', 'DEEP_CRAB', 'SHARK'];
-    let currentModel = 'GARTLEY';
-    let signals = {};
-    MODELS.forEach(m => signals[m] = new Map());
+const MODELS = ['GARTLEY','BAT','BUTTERFLY','CRAB','DEEP_CRAB','SHARK'];
+let currentModel='GARTLEY';
+let signals={}; MODELS.forEach(m=>signals[m]=new Map());
 
-    let chart, candleSeries, lineSeries;
+let chart,candleSeries;
 
-    // --- Initialization ---
-    function init() {
-        initChart();
-        updateClock();
-        setInterval(updateClock, 1000);
-        
-        // Simulating data arrival for demo
-        simulateSignals();
-    }
+function init(){
+    initChart(); updateClock(); setInterval(updateClock,1000);
+    masterScanner();
+}
 
-    function initChart() {
-        const chartElement = document.getElementById('tv-chart');
-        chart = LightweightCharts.createChart(chartElement, {
-            layout: { backgroundColor: '#0a0b0d', textColor: '#d1d4dc' },
-            grid: { vertLines: { color: '#1f2226' }, horzLines: { color: '#1f2226' } },
-            crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
-            priceScale: { borderColor: '#2b2f36' },
-            timeScale: { borderColor: '#2b2f36', timeVisible: true }
-        });
-        candleSeries = chart.addCandlestickSeries();
-        
-        window.addEventListener('resize', () => {
-            chart.resize(chartElement.clientWidth, chartElement.clientHeight);
-        });
-    }
+function initChart(){
+    const chartElement=document.getElementById('tv-chart');
+    chart=LightweightCharts.createChart(chartElement,{
+        layout:{backgroundColor:'#0a0b0d',textColor:'#d1d4dc'},
+        grid:{vertLines:{color:'#1f2226'},horzLines:{color:'#1f2226'}},
+        crosshair:{mode:LightweightCharts.CrosshairMode.Normal},
+        priceScale:{borderColor:'#2b2f36'},
+        timeScale:{borderColor:'#2b2f36',timeVisible:true}
+    });
+    candleSeries=chart.addCandlestickSeries();
+    window.addEventListener('resize',()=>{chart.resize(chartElement.clientWidth,chartElement.clientHeight);});
+}
 
-    // --- Logic Functions ---
-    function switchModel(modelName) {
-        currentModel = modelName;
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.innerText.toUpperCase() === modelName.replace('_', ' '));
-        });
-        renderSignals();
-    }
+function switchModel(model){
+    currentModel=model;
+    document.querySelectorAll('.tab-btn').forEach(btn=>{
+        btn.classList.toggle('active',btn.innerText.toUpperCase().replace(' ','_')===model);
+    });
+    renderSignals();
+}
 
-    function addSignal(model, symbol, price, pts) {
-        const signalData = {
-            symbol,
-            price,
-            pts,
-            time: new Date(),
-            isNew: true
-        };
-        signals[model].set(symbol, signalData);
-        
-        if (model === currentModel) renderSignals();
-        playAlert();
+function addSignal(model,symbol,price,pts){
+    const signalData={symbol,price,pts,time:new Date(),isNew:true};
+    signals[model].set(symbol,signalData);
+    if(model===currentModel) renderSignals();
+    playAlert();
+    setTimeout(()=>{signalData.isNew=false;if(model===currentModel) renderSignals();},10000);
+}
 
-        setTimeout(() => {
-            signalData.isNew = false;
-            if (model === currentModel) renderSignals();
-        }, 10000);
-    }
+function renderSignals(){
+    const list=document.getElementById('radar-list');
+    const mapArea=document.getElementById('radar-map');
+    const searchTerm=document.getElementById('search-box').value.toUpperCase();
+    list.innerHTML='';
+    mapArea.querySelectorAll('.radar-point').forEach(p=>p.remove());
+    const currentMap=signals[currentModel];
+    let count=0;
+    currentMap.forEach((data,symbol)=>{
+        if(symbol.includes(searchTerm)){
+            count++;
+            const card=document.createElement('div');
+            card.className=`signal-card ${data.isNew?'new':''}`;
+            card.style.borderLeftColor=`var(--color-${currentModel.toLowerCase().replace('_','')})`;
+            card.innerHTML=`<div style="display:flex;justify-content:space-between"><b>${symbol}</b><span style="color:var(--neon-blue)">${data.price}</span></div>
+                <div style="font-size:11px;color:var(--text-gray);margin-top:5px;">Pattern: ${currentModel} | ${data.time.toLocaleTimeString()}</div>`;
+            card.onclick=()=>loadPair(symbol);
+            list.appendChild(card);
 
-    function renderSignals() {
-        const list = document.getElementById('radar-list');
-        const mapArea = document.getElementById('radar-map');
-        const searchTerm = document.getElementById('search-box').value.toUpperCase();
-        
-        list.innerHTML = '';
-        // Clear previous points (keep sweep)
-        const oldPoints = mapArea.querySelectorAll('.radar-point');
-        oldPoints.forEach(p => p.remove());
-
-        const currentMap = signals[currentModel];
-        let count = 0;
-
-        currentMap.forEach((data, symbol) => {
-            if (symbol.includes(searchTerm)) {
-                count++;
-                // 1. Create List Card
-                const card = document.createElement('div');
-                card.className = `signal-card ${data.isNew ? 'new' : ''}`;
-                card.style.borderLeftColor = `var(--color-${currentModel.toLowerCase().replace('_','')})`;
-                card.innerHTML = `
-                    <div style="display:flex; justify-content:space-between">
-                        <b>${symbol}</b>
-                        <span style="color:var(--neon-blue)">${data.price}</span>
-                    </div>
-                    <div style="font-size:11px; color:var(--text-gray); margin-top:5px;">
-                        Pattern: ${currentModel} | ${data.time.toLocaleTimeString()}
-                    </div>
-                `;
-                card.onclick = () => loadPair(symbol);
-                list.appendChild(card);
-
-                // 2. Create Radar Point
-                const point = document.createElement('div');
-                point.className = 'radar-point';
-                const x = Math.random() * 80 + 10; // Randomly placed for demo
-                const y = Math.random() * 80 + 10;
-                
-                Object.assign(point.style, {
-                    position: 'absolute',
-                    left: x + '%',
-                    top: y + '%',
-                    width: '8px',
-                    height: '8px',
-                    borderRadius: '50%',
-                    backgroundColor: `var(--color-${currentModel.toLowerCase().replace('_','')})`,
-                    boxShadow: `0 0 10px var(--color-${currentModel.toLowerCase().replace('_','')})`,
-                    cursor: 'pointer',
-                    zIndex: '10'
-                });
-                if(data.isNew) point.style.animation = 'pulse 1s infinite';
-                mapArea.appendChild(point);
-            }
-        });
-
-        document.getElementById('pairs-count').innerText = count;
-    }
-
-    function filterSignals() {
-        renderSignals();
-    }
-
-    async function loadPair(symbol) {
-        // Here you would fetch real Binance data
-        console.log("Loading Chart for:", symbol);
-        // Mock data for chart
-        const mockData = [];
-        let basePrice = 100;
-        for(let i=0; i<100; i++) {
-            basePrice += Math.random() * 2 - 1;
-            mockData.push({
-                time: Date.now() / 1000 + (i * 60),
-                open: basePrice, high: basePrice + 1, low: basePrice - 1, close: basePrice + 0.5
-            });
+            const point=document.createElement('div'); point.className='radar-point';
+            const x=Math.random()*80+10,y=Math.random()*80+10;
+            Object.assign(point.style,{position:'absolute',left:x+'%',top:y+'%',width:'8px',height:'8px',borderRadius:'50%',backgroundColor:`var(--color-${currentModel.toLowerCase().replace('_','')})`,boxShadow:`0 0 10px var(--color-${currentModel.toLowerCase().replace('_','')})`,cursor:'pointer',zIndex:'10'});
+            if(data.isNew) point.style.animation='pulse 1s infinite';
+            mapArea.appendChild(point);
         }
-        candleSeries.setData(mockData);
+    });
+    document.getElementById('pairs-count').innerText=count;
+}
+
+function filterSignals(){ renderSignals(); }
+
+async function loadPair(symbol){
+    const overlay=document.getElementById('loading-overlay');
+    overlay.style.display='flex';
+    try{
+        const res=await fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=1h&limit=100`);
+        const data=await res.json();
+        const formattedData=data.map(d=>({time:d[0]/1000,open:parseFloat(d[1]),high:parseFloat(d[2]),low:parseFloat(d[3]),close:parseFloat(d[4])}));
+        candleSeries.setData(formattedData);
         chart.timeScale().fitContent();
-    }
+    }catch(e){ console.error(e);}finally{overlay.style.display='none';}
+}
 
-    // --- Utilities ---
-    function updateClock() {
-        document.getElementById('clock').innerText = new Date().toLocaleTimeString();
-    }
+// --- Alert Sound ---
+function playAlert(){ const audio=new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'); audio.volume=0.3; audio.play().catch(()=>{}); }
 
-    function playAlert() {
-        const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-        audio.volume = 0.5;
-        audio.play().catch(() => {});
+// --- Master Scanner ---
+async function masterScanner(){
+    const url='https://api.binance.com/api/v3/ticker/price';
+    while(true){
+        try{
+            const res=await fetch(url);
+            const data=await res.json();
+            const symbols=data.filter(d=>d.symbol.endsWith('USDT')).slice(0,50);
+            for(let s of symbols){
+                const price=parseFloat(s.price);
+                const pattern=MODELS[Math.floor(Math.random()*MODELS.length)]; // Placeholder pattern detection
+                addSignal(pattern,s.symbol,price,{});
+                await new Promise(r=>setTimeout(r,80));
+            }
+        }catch(e){ console.error(e);}
+        await new Promise(r=>setTimeout(r,5000));
     }
+}
 
-    function simulateSignals() {
-        setTimeout(() => addSignal('GARTLEY', 'BTCUSDT', '65200', {}), 1000);
-        setTimeout(() => addSignal('GARTLEY', 'ETHUSDT', '3500', {}), 3000);
-        setTimeout(() => addSignal('BAT', 'SOLUSDT', '145', {}), 5000);
-    }
+// --- Clock ---
+function updateClock(){document.getElementById('clock').innerText=new Date().toLocaleTimeString();}
 
-    window.onload = init;
+window.onload=init;
 </script>
-
 </body>
 </html>
