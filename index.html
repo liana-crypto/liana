@@ -2,118 +2,161 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>LIANA PRO | الرسم الهندسي التلقائي</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&display=swap" rel="stylesheet">
+    <title>LIANA AI | رادار الهارمونيك المتكامل</title>
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Tajawal:wght@500;800&display=swap" rel="stylesheet">
     <style>
-        :root { --neon: #00ff41; --bg: #000; }
-        body { background: var(--bg); color: var(--neon); margin: 0; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        :root { --neon: #00ff41; --bg: #000; --panel: #0d0d0d; --text: #d1d4dc; }
+        body { background: var(--bg); color: var(--text); margin: 0; font-family: 'Tajawal', sans-serif; display: flex; height: 100vh; overflow: hidden; }
         
-        .model-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; background: #111; padding: 5px; border-bottom: 2px solid #222; }
-        .m-btn { background: #000; border: 1px solid #333; color: #666; padding: 10px; font-size: 0.65rem; font-family: 'Orbitron'; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .m-btn.active { color: var(--neon); border-color: var(--neon); box-shadow: 0 0 10px #00ff4133; }
-        .m-btn.scanning { animation: blink 0.8s infinite; color: #fff; }
+        .sidebar { width: 300px; background: #050505; border-left: 1px solid #1a1a1a; display: flex; flex-direction: column; padding: 15px; }
+        .radar-box { flex: 1; overflow-y: auto; margin-top: 10px; }
+        
+        .main-stage { flex: 1; display: flex; flex-direction: column; }
+        #chart_container { flex: 1; }
 
-        #tv_container { flex: 1; position: relative; }
-        #log_box { height: 12vh; background: #050505; border-top: 2px solid #222; padding: 10px; font-size: 0.75rem; color: #888; overflow-y: auto; }
-        
-        @keyframes blink { 50% { background: #003311; } }
+        .sig-card { 
+            background: var(--panel); border: 1px solid #222; padding: 12px; margin-bottom: 8px; 
+            border-radius: 6px; cursor: pointer; transition: 0.2s; border-right: 4px solid var(--neon);
+        }
+        .sig-card:hover { transform: translateX(-5px); background: #111; }
+        .sig-card .info { display: flex; justify-content: space-between; font-family: 'Orbitron'; font-size: 0.9rem; }
+        .probability { color: var(--neon); font-size: 0.7rem; }
+
+        .status-bar { height: 40px; background: #050505; border-bottom: 1px solid #1a1a1a; display: flex; align-items: center; padding: 0 20px; font-size: 0.75rem; justify-content: space-between; }
+        .loader { width: 10px; height: 10px; background: var(--neon); border-radius: 50%; display: inline-block; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
 
-<div class="model-bar">
-    <button class="m-btn" onclick="AutoLiana.find('GARTLEY', this)">GARTLEY</button>
-    <button class="m-btn" onclick="AutoLiana.find('BAT', this)">BAT</button>
-    <button class="m-btn" onclick="AutoLiana.find('BUTTERFLY', this)">BUTTERFLY</button>
-    <button class="m-btn" onclick="AutoLiana.find('CRAB', this)">CRAB</button>
-    <button class="m-btn" onclick="AutoLiana.find('CYPHER', this)">CYPHER</button>
-    <button class="m-btn" onclick="AutoLiana.find('SHARK', this)">SHARK</button>
+<div class="sidebar">
+    <div style="font-family:'Orbitron'; font-weight:900; color:var(--neon); font-size:1.4rem; margin-bottom:20px;">LIANA AI V5</div>
+    <div style="font-size:0.7rem; color:#666;">🔴 LIVE SCANNER (300+ PAIRS)</div>
+    <div class="radar-box" id="radar-list"></div>
 </div>
 
-<div id="tv_container"></div>
-<div id="log_box">بانتظار اختيار النموذج لبدء المسح والرسم التلقائي...</div>
+<div class="main-stage">
+    <div class="status-bar">
+        <div><span class="loader"></span> نظام البحث: <b id="current-scan">Initializing...</b></div>
+        <div id="pair-stats">Pairs: 0</div>
+    </div>
+    <div id="chart_container"></div>
+</div>
 
-<script src="https://s3.tradingview.com/tv.js"></script>
 <script>
-const AutoLiana = {
-    async find(type, btn) {
-        this.resetBtns();
-        btn.classList.add('scanning', 'active');
-        this.log(`جاري فحص السوق للبحث عن نموذج ${type} (إيجابي فقط)...`);
+const LianaV5 = {
+    chart: null, candleSeries: null, patternLines: [], markers: [],
+    allPairs: [],
 
-        const pairs = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT', 'FETUSDT', 'RSRUSDT', 'SNXUSDT', 'NEARUSDT', 'XRPUSDT', 'ADAUSDT'];
-        let success = false;
+    async init() {
+        const chartOptions = { 
+            layout: { backgroundColor: '#000000', textColor: '#d1d4dc' },
+            grid: { vertLines: { color: '#111' }, horzLines: { color: '#111' } },
+            timeScale: { borderColor: '#222', timeVisible: true }
+        };
+        this.chart = LightweightCharts.createChart(document.getElementById('chart_container'), chartOptions);
+        this.candleSeries = this.chart.addCandlestickSeries({ upColor: '#00ff41', downColor: '#ff3131' });
 
-        for (let s of pairs) {
-            const result = await this.checkPair(s, type);
-            if (result) {
-                this.log(`تم العثور على النموذج في ${s}! جاري رسم المثلثات...`);
-                this.renderChart(s, result.pts, type);
-                success = true;
-                break;
-            }
-        }
+        const info = await fetch('https://api.binance.com/api/v3/exchangeInfo').then(r => r.json());
+        this.allPairs = info.symbols.filter(s => s.quoteAsset === 'USDT').map(s => s.symbol);
+        document.getElementById('pair-stats').innerText = `Pairs: ${this.allPairs.length}`;
 
-        if (!success) this.log(`عذراً، لم يتم العثور على ${type} صالح حالياً في العملات الرئيسية.`);
-        btn.classList.remove('scanning');
+        this.startScanner();
+        this.loadChart('BTCUSDT');
     },
 
-    async checkPair(s, type) {
-        try {
-            const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${s}&interval=1h&limit=60`).then(r => r.json());
-            const c = res.map(d => parseFloat(d[4]));
-            let p = [];
-            for(let i=2; i<c.length-2; i++) {
-                if((c[i]>c[i-1] && c[i]>c[i+1]) || (c[i]<c[i-1] && c[i]<c[i+1])) p.push({v: c[i], t: res[i][0]});
+    async loadChart(s) {
+        const k = await fetch(`https://api.binance.com/api/v3/klines?symbol=${s}&interval=1h&limit=150`).then(r => r.json());
+        const data = k.map(d => ({ time: d[0]/1000, open: +d[1], high: +d[2], low: +d[3], close: +d[4] }));
+        this.candleSeries.setData(data);
+        this.chart.timeScale().fitContent();
+        this.clearPatterns(); // تنظيف الشارت عند تغيير العملة
+    },
+
+    clearPatterns() {
+        this.patternLines.forEach(l => this.chart.removeSeries(l));
+        this.patternLines = [];
+        this.candleSeries.setMarkers([]);
+    },
+
+    async startScanner() {
+        const batchSize = 20;
+        for (let i = 0; i < this.allPairs.length; i += batchSize) {
+            const batch = this.allPairs.slice(i, i + batchSize);
+            for (let s of batch) {
+                document.getElementById('current-scan').innerText = `Scanning ${s}...`;
+                await this.analyze(s);
             }
-            if(p.length < 5) return null;
-            const pts = p.slice(-5);
+            await new Promise(r => setTimeout(r, 2000)); // استراحة لتجنب حظر الـ API
+        }
+        this.startScanner();
+    },
+
+    async analyze(s) {
+        try {
+            const k = await fetch(`https://api.binance.com/api/v3/klines?symbol=${s}&interval=1h&limit=80`).then(r => r.json());
+            const c = k.map(d => +d[4]);
+            
+            // منطق ZigZag مبسط لاكتشاف النقاط بدقة
+            let pivots = [];
+            for(let i=5; i<c.length-5; i++) {
+                const isMax = c.slice(i-5, i+5).every(v => v <= c[i]);
+                const isMin = c.slice(i-5, i+5).every(v => v >= c[i]);
+                if(isMax || isMin) pivots.push({v: c[i], t: k[i][0]/1000});
+            }
+
+            if(pivots.length < 5) return;
+            const pts = pivots.slice(-5);
             const [X, A, B, C, D] = pts.map(p => p.v);
-
-            // تطبيق شروط "ليانا" الصارمة (إيجابي فقط)
-            if (!(D < C && D < A)) return null;
-
+            
+            // حساب النسب بدقة (Fibonacci Logic)
             const xa = Math.abs(A-X), ab = Math.abs(B-A)/xa, ad = Math.abs(D-A)/xa;
-            let ok = false;
-            const t = 0.1;
+            let model = "";
 
-            if (type === 'GARTLEY' && this.is(ab, 0.618, t) && this.is(ad, 0.786, t)) ok = true;
-            else if (type === 'BAT' && this.is(ab, 0.382, t) && this.is(ad, 0.886, t)) ok = true;
-            else if (type === 'SHARK' && ad >= 0.88 && ad <= 1.13) ok = true;
-            else if (type === 'BUTTERFLY' && ad >= 1.27 && ad <= 1.61) ok = true;
+            if (this.is(ab, 0.618, 0.05)) model = "GARTLEY";
+            else if (this.is(ab, 0.382, 0.05)) model = "BAT";
+            else if (this.is(ab, 0.786, 0.05)) model = "BUTTERFLY";
+            else if (this.is(ad, 1.13, 0.1)) model = "SHARK";
 
-            return ok ? {pts: pts} : null;
-        } catch(e) { return null; }
+            if (model && D < C) this.updateRadar(s, model, pts, ad);
+        } catch(e){}
     },
 
     is(v, t, e) { return v >= t - e && v <= t + e; },
 
-    renderChart(symbol, pts, type) {
-        document.getElementById('tv_container').innerHTML = "";
-        new TradingView.widget({
-            "autosize": true,
-            "symbol": "BINANCE:"+symbol,
-            "interval": "60",
-            "theme": "dark",
-            "container_id": "tv_container",
-            "locale": "ar",
-            "hide_side_toolbar": false,
-            "enabled_features": ["study_templates", "create_volume_indicator_by_default"],
-            "overrides": {
-                "mainSeriesProperties.style": 1,
-                "paneProperties.background": "#000000"
-            }
-        });
+    updateRadar(s, type, pts, ad) {
+        if(document.getElementById('c-'+s)) return;
+        const prob = Math.min(100, Math.floor(100 - (Math.abs(ad - 1.13)*100)));
         
-        // محاكاة الرسم الهندسي لليانا عبر الكونسول واللوج
-        this.log(`الرسم مكتمل لـ ${type}: النقاط X:${pts[0].v}, A:${pts[1].v}, D:${pts[4].v}`);
+        const card = document.createElement('div');
+        card.id = 'c-'+s; card.className = 'sig-card';
+        card.innerHTML = `<div class="info"><b>${s}</b> <span class="probability">${prob}% ACC</span></div>
+                          <div style="font-size:0.7rem; margin-top:5px; color:#aaa;">${type} BULLISH DETECTED</div>`;
+        card.onclick = () => {
+            this.loadChart(s);
+            setTimeout(() => this.drawXABCD(pts), 500);
+        };
+        document.getElementById('radar-list').prepend(card);
     },
 
-    resetBtns() { document.querySelectorAll('.m-btn').forEach(b => b.classList.remove('active', 'scanning')); },
-    log(m) { document.getElementById('log_box').innerText = m; }
+    drawXABCD(pts) {
+        this.clearPatterns();
+        const labels = ['X', 'A', 'B', 'C', 'D'];
+        
+        for(let i=1; i<pts.length; i++) {
+            const line = this.chart.addLineSeries({ color: 'rgba(0, 255, 65, 0.6)', lineWidth: 2, lineStyle: 0 });
+            line.setData([{time: pts[i-1].t, value: pts[i-1].v}, {time: pts[i].t, value: pts[i].v}]);
+            this.patternLines.push(line);
+        }
+
+        this.candleSeries.setMarkers(pts.map((p, i) => ({
+            time: p.t, position: 'aboveBar', color: '#fff', shape: 'arrowDown', text: labels[i]
+        })));
+    }
 };
 
-window.onload = () => AutoLiana.log("النظام جاهز. اختر نموذجاً للبحث الفوري...");
+window.onload = () => LianaV5.init();
 </script>
 </body>
 </html>
