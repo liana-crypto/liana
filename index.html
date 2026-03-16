@@ -3,150 +3,198 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>LIANA V10.5 | NAYRO VEX</title>
+<title>LIANA V11.2 | NAYRO VEX</title>
 <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Tajawal:wght@500;800&display=swap" rel="stylesheet">
 <style>
 :root { 
     --bg:#000; --panel:#0d0d0d; --neon:#00ff41;
     --GARTLEY:#00ff41; --BAT:#00d4ff; --BUTTERFLY:#bf00ff; 
-    --CRAB:#ffd700; --SHARK:#fffb00; --CYPHER:#ff5e00; 
+    --CRAB:#ffd700; --SHARK:#fffb00;
 }
 body { margin:0; font-family:'Tajawal', sans-serif; height:100vh; display:flex; flex-direction:column; background:var(--bg); color:#fff; overflow:hidden; }
 
-.header { display:flex; justify-content:space-between; align-items:center; padding:10px 15px; background:#000; border-bottom:1px solid #111; z-index:100; }
-.logo { font-family:'Orbitron'; font-weight:900; color:var(--neon); font-size:0.85rem; }
-#ws-status { font-size:0.55rem; padding:3px 8px; border-radius:4px; border:1px solid #222; font-family:'Orbitron'; color: #ff3131; }
+/* 🎖️ حاوية الرادار العسكري */
+.radar-section { 
+    height: 38vh; position: relative; overflow: hidden;
+    background: radial-gradient(circle, #051505 0%, #000 80%);
+    border-bottom: 2px solid #111; display:flex; justify-content:center; align-items:center;
+}
+#radarCanvas { position: absolute; z-index: 1; }
 
-/* 1️⃣ تطبيق الحل الجذري: حاوية ثابتة بخلفية سوداء إجبارية */
-#chart_container { 
-    height:38vh; 
-    width:100%; 
-    min-height: 300px;
-    background:#000 !important; 
-    border-bottom:2px solid #1a1a1a; 
-    position:relative;
+#chart_container { height:32vh; width:100%; background:#000; border-bottom:1px solid #1a1a1a; display:none; }
+
+.search-box { padding:12px; background:#050505; border-bottom:1px solid #111; }
+#search-input { 
+    width:100%; background:#0a0a0a; border:1px solid rgba(0,255,65,0.2); 
+    padding:12px; border-radius:8px; color:var(--neon); font-family:'Orbitron'; outline:none;
 }
 
-.trade-info { background:rgba(0,255,65,0.05); border:1px solid #1a1a1a; padding:10px; margin:10px; border-radius:8px; display:none; border-left:4px solid var(--neon); }
-.trade-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:5px; font-size:0.6rem; text-align:center; margin-top:5px; }
-.trade-grid div { background:#111; padding:5px; border-radius:4px; border:1px solid #1a1a1a; }
-
-.controls-bar { display:flex; gap:8px; padding:10px; background:#080808; overflow-x:auto; scrollbar-width:none; border-bottom:1px solid #111; }
-.tf-btn { background:#111; border:1px solid #222; color:#fff; padding:6px 12px; border-radius:6px; font-size:0.6rem; cursor:pointer; white-space:nowrap; transition: 0.2s; }
-.tf-btn.active { border-color:var(--neon); color:var(--neon); background:rgba(0,255,65,0.05); }
-
-.search-box { padding:10px; background:#050505; }
-#search-input { width:100%; background:#111; border:1px solid #222; padding:12px; border-radius:8px; color:#fff; font-size:0.8rem; outline:none; box-sizing: border-box; }
-
-.radar-list { padding:0 10px 20px 10px; overflow-y:auto; flex:1; }
-.sig-card { background:var(--panel); border:1px solid #111; border-radius:10px; padding:15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; border-right:4px solid #333; animation:slideIn 0.3s ease; cursor:pointer; }
-@keyframes slideIn { from {opacity:0; transform:translateX(10px);} to {opacity:1; transform:translateX(0);} }
-
-.new-signal { animation: pulse 1.5s infinite; }
-@keyframes pulse { 0% { box-shadow: 0 0 0px transparent; } 50% { box-shadow: 0 0 8px var(--neon); } 100% { box-shadow: 0 0 0px transparent; } }
+.radar-list { flex:1; overflow-y:auto; padding:10px; background:#000; }
+.sig-card { 
+    background:#0d0d0d; border:1px solid #1a1a1a; padding:12px; margin-bottom:8px; 
+    border-right:4px solid var(--neon); display:flex; justify-content:space-between; 
+    align-items:center; cursor:pointer; animation: slideIn 0.3s ease;
+}
+@keyframes slideIn { from{opacity:0; transform:translateX(10px);} to{opacity:1; transform:translateX(0);} }
 </style>
 </head>
 <body>
 
-<div class="header">
-    <div class="logo">LIANA <span style="color:#fff">V10.5 MAX</span></div>
-    <div id="ws-status">WS: CONNECTING</div>
+<div class="radar-section">
+    <div style="position:absolute; top:10px; left:15px; font-family:Orbitron; font-size:0.6rem; color:var(--neon); z-index:5; letter-spacing:2px;">TACTICAL_SCANNER_V11.2</div>
+    <canvas id="radarCanvas"></canvas>
 </div>
 
 <div id="chart_container"></div>
 
-<div id="trade-panel" class="trade-info">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-        <b id="t-pair" style="font-size:0.9rem">---</b>
-        <span id="t-model" style="font-family:Orbitron; font-size:0.65rem;">---</span>
-    </div>
-    <div class="trade-grid">
-        <div>ENTRY<br><span id="t-entry" style="color:#fff">-</span></div>
-        <div>STOP<br><span id="t-sl" style="color:#ff3131">-</span></div>
-        <div>TARGET<br><span id="t-tp" style="color:var(--neon)">-</span></div>
-    </div>
-</div>
-
-<div class="controls-bar">
-    <div class="tf-btn active" onclick="Sniper.changeTF('1h', this)">1H</div>
-    <div class="tf-btn" onclick="Sniper.changeTF('4h', this)">4H</div>
-    <div class="tf-btn" onclick="Sniper.changeTF('15m', this)">15M</div>
-    <div class="tf-btn" onclick="Sniper.changeTF('5m', this)">5M</div>
-</div>
-
 <div class="search-box">
-    <input type="text" id="search-input" placeholder="بحث سريع عن العملة..." oninput="Sniper.filterRadar()">
+    <input type="text" id="search-input" placeholder="ACQUIRING_TARGET..." oninput="Sniper.searchRadar(this.value)">
 </div>
 
 <div class="radar-list" id="radar-list"></div>
 
 <script>
 const Sniper = {
-    chart:null, candleSeries:null, activeSeries:[], signals:new Map(), pairs:[], currentTF:'1h',
+    chart:null, candleSeries:null, activeSeries:[], signals:new Map(),
+    ctx:null, radarAngle:0, points:[], currentTF:'1h',
     audio: new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'),
 
-    // 2️⃣ إنشاء الشارت بعد استقرار الـ DOM وبتوقيت دقيق
     init() {
-        const container = document.getElementById('chart_container');
+        const canvas = document.getElementById('radarCanvas');
+        this.ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight * 0.38;
+
         requestAnimationFrame(() => {
-            this.chart = LightweightCharts.createChart(container, {
-                layout: { backgroundColor: '#000', textColor: '#d1d4dc' },
-                grid: { vertLines: { visible: false }, horzLines: { color: '#080808' } },
-                width: container.clientWidth,
-                height: container.clientHeight,
-                timeScale: { borderColor: '#1a1a1a', timeVisible: true }
-            });
-            this.candleSeries = this.chart.addCandlestickSeries({ 
-                upColor: '#00ff41', downColor: '#ff3131', borderVisible: false 
-            });
-            
-            this.chart.timeScale().fitContent();
-            this.setupResize();
+            this.initChart();
+            this.animateRadar();
             this.loadInitialData();
         });
     },
 
-    // 3️⃣ التعامل الديناميكي مع تغيير الحجم
-    setupResize() {
-        window.addEventListener('resize', () => {
-            if(this.chart) {
-                const container = document.getElementById('chart_container');
-                this.chart.applyOptions({ 
-                    width: container.clientWidth, 
-                    height: container.clientHeight 
-                });
-                this.chart.timeScale().fitContent();
+    initChart() {
+        const container = document.getElementById('chart_container');
+        this.chart = LightweightCharts.createChart(container, {
+            layout: { backgroundColor: '#000', textColor: '#d1d4dc' },
+            grid: { vertLines: { visible: false }, horzLines: { color: '#080808' } },
+            width: container.clientWidth, height: container.clientHeight,
+            timeScale: { borderColor: '#111', timeVisible: true }
+        });
+        this.candleSeries = this.chart.addCandlestickSeries({ upColor: '#00ff41', downColor: '#ff3131', borderVisible: false });
+    },
+
+    animateRadar() {
+        const { ctx, points } = this;
+        const cx = canvas.width / 2, cy = canvas.height / 2;
+        const radius = Math.min(cx, cy) - 30;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // رسم شبكة الرادار
+        ctx.strokeStyle = 'rgba(0, 255, 65, 0.1)';
+        for(let r=1; r<=3; r++) {
+            ctx.beginPath(); ctx.arc(cx, cy, (radius/3)*r, 0, Math.PI*2); ctx.stroke();
+        }
+
+        // رسم الشعاع الدوار
+        ctx.save();
+        ctx.translate(cx, cy); ctx.rotate(this.radarAngle);
+        let grad = ctx.createLinearGradient(0, 0, radius, 0);
+        grad.addColorStop(0, 'transparent'); grad.addColorStop(1, 'rgba(0, 255, 65, 0.3)');
+        ctx.fillStyle = grad;
+        ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0,0, radius, -0.4, 0); ctx.fill();
+        ctx.restore();
+
+        // رسم النقاط والأشعة الاستهدافية
+        this.points.forEach(p => {
+            if(p.highlight) {
+                // الشعاع الرابط (Laser Line)
+                ctx.strokeStyle = 'rgba(0, 255, 65, 0.5)';
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(p.x, p.y); ctx.stroke();
+                ctx.setLineDash([]);
+                
+                // هالة الاستهداف
+                ctx.strokeStyle = '#fff';
+                ctx.beginPath(); ctx.arc(p.x, p.y, 10 + Math.sin(Date.now()/100)*3, 0, Math.PI*2); ctx.stroke();
             }
+
+            ctx.fillStyle = p.highlight ? '#fff' : p.color;
+            ctx.shadowBlur = 15; ctx.shadowColor = p.color;
+            ctx.beginPath(); ctx.arc(p.x, p.y, p.highlight ? 6 : 4, 0, Math.PI*2); ctx.fill();
+            ctx.shadowBlur = 0;
+
+            ctx.fillStyle = "#fff"; ctx.font = "8px Orbitron";
+            ctx.fillText(p.symbol, p.x + 10, p.y - 10);
+        });
+
+        this.radarAngle += 0.03;
+        requestAnimationFrame(() => this.animateRadar());
+    },
+
+    addSignal(s, m, pts) {
+        if(this.signals.has(s)) return;
+        const cx = canvas.width / 2, cy = canvas.height / 2;
+        const r = (Math.min(cx, cy) - 60) * Math.random() + 20;
+        const a = Math.random() * Math.PI * 2;
+        const colors = { GARTLEY: '#00ff41', BAT: '#00d4ff', BUTTERFLY: '#bf00ff', CRAB:'#ffd700' };
+        
+        const p = { 
+            symbol: s, x: cx + r * Math.cos(a), y: cy + r * Math.sin(a), 
+            color: colors[m] || '#fff', highlight: false, pts: pts, model: m 
+        };
+        this.points.push(p);
+        this.signals.set(s, p);
+        this.audio.play().catch(()=>{});
+
+        const card = document.createElement('div');
+        card.className = 'sig-card'; card.style.borderRightColor = colors[m];
+        card.innerHTML = `<div><b>${s}</b><br><small>${m}</small></div><div style="color:var(--neon); font-size:0.6rem;">LOCKED</div>`;
+        card.onclick = () => this.showTarget(s);
+        document.getElementById('radar-list').prepend(card);
+    },
+
+    searchRadar(val) {
+        const q = val.toUpperCase();
+        let found = false;
+        this.points.forEach(p => {
+            const match = q !== "" && p.symbol.includes(q);
+            if(match && !p.highlight) this.audio.play().catch(()=>{}); 
+            p.highlight = match;
+            if(match) found = true;
         });
     },
 
-    async loadInitialData() {
-        const info = await fetch('https://api.binance.com/api/v3/exchangeInfo').then(r=>r.json());
-        this.pairs = info.symbols.filter(s=>s.quoteAsset==='USDT').map(s=>s.symbol);
-        this.loadPair('BTCUSDT');
-        this.connectWS();
-        this.startScanner();
+    showTarget(s) {
+        const data = this.signals.get(s);
+        document.getElementById('chart_container').style.display = 'block';
+        this.searchRadar(s); // تمييز النقطة بصرياً
+        this.loadPair(s, data.pts, data.model);
     },
 
-    connectWS() {
-        const ws = new WebSocket('wss://stream.binance.com:9443/ws/!miniTicker@arr');
-        ws.onopen = () => { 
-            const s=document.getElementById('ws-status'); 
-            s.innerText='WS: LIVE'; s.style.color='#00ff41'; 
-        };
-        ws.onclose = () => setTimeout(() => this.connectWS(), 5000);
+    loadPair(s, pts, m) {
+        fetch(`https://api.binance.com/api/v3/klines?symbol=${s}&interval=${this.currentTF}&limit=120`)
+        .then(r => r.json()).then(k => {
+            this.candleSeries.setData(k.map(d => ({ 
+                time: d[0]/1000, open: +d[1], high: +d[2], low: +d[3], close: +d[4] 
+            })));
+            this.drawPattern(pts, m);
+            this.chart.timeScale().fitContent();
+        });
     },
 
-    startScanner() {
-        let idx = 0;
-        const scan = async () => {
-            const batch = this.pairs.slice(idx, idx + 15);
-            await Promise.allSettled(batch.map(s => this.analyze(s)));
-            idx = (idx + 15) % this.pairs.length;
-            setTimeout(scan, 2000);
-        };
-        scan();
+    drawPattern(pts, m) {
+        this.activeSeries.forEach(s => this.chart.removeSeries(s));
+        this.activeSeries = [];
+        const line = this.chart.addLineSeries({ color: `var(--${m})`, lineWidth: 2, lineStyle: 0 });
+        line.setData(pts.map(p => ({ time: p.t, value: p.v })));
+        this.activeSeries.push(line);
+
+        // 3️⃣ رسم مؤشرات X,A,B,C,D كعلامات احترافية
+        this.candleSeries.setMarkers(pts.map((p, i) => ({
+            time: p.t, position: 'aboveBar', color: '#fff', shape: 'arrowDown', text: ['X','A','B','C','D'][i]
+        })));
     },
 
     async analyze(s) {
@@ -154,7 +202,6 @@ const Sniper = {
             const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${s}&interval=${this.currentTF}&limit=100`);
             const data = await res.json();
             const close = data.map(d => +d[4]);
-            
             let pivots = [];
             for(let i=5; i<close.length-5; i++) {
                 const slice = close.slice(i-5, i+5);
@@ -162,90 +209,37 @@ const Sniper = {
                     pivots.push({v: close[i], t: data[i][0]/1000});
             }
             if(pivots.length < 5) return;
-            
             const pts = pivots.slice(-5);
             const [X, A, B, C, D] = pts.map(p => p.v);
             const xa = Math.abs(A-X), ab = Math.abs(B-A)/xa, ad = Math.abs(D-A)/xa;
 
             let m = "";
-            if(this.is(ab, 0.618, 0.05) && this.is(ad, 0.786, 0.06)) m = "GARTLEY";
-            else if(this.is(ab, 0.382, 0.1) && this.is(ad, 0.886, 0.05)) m = "BAT";
-            else if(this.is(ab, 0.786, 0.05) && this.is(ad, 1.27, 0.1)) m = "BUTTERFLY";
-            else if(this.is(ab, 0.886, 0.05) && this.is(ad, 1.618, 0.1)) m = "CRAB";
-
+            if(ab >= 0.61 && ab <= 0.63 && ad >= 0.77 && ad <= 0.8) m = "GARTLEY";
+            else if(ab >= 0.38 && ab <= 0.51 && ad >= 0.87 && ad <= 0.9) m = "BAT";
+            
             if(m) this.addSignal(s, m, pts);
         } catch(e){}
     },
 
-    is(v,t,e){ return v >= t-e && v <= t+e; },
-
-    addSignal(s, m, pts) {
-        if(this.signals.has(s)) return;
-        this.signals.set(s, { symbol: s, model: m, pts: pts });
-        this.audio.play().catch(() => {}); 
-        
-        const card = document.createElement('div');
-        card.className = 'sig-card new-signal'; 
-        card.id = `card-${s}`; 
-        card.style.borderRightColor = `var(--${m})`;
-        card.innerHTML = `<div><b>${s}</b><br><small style="color:var(--${m})">${m}</small></div>
-                        <div style="font-size:0.55rem;color:var(--neon)">NEW PATTERN</div>`;
-        card.onclick = () => { this.loadPair(s); this.showTrade(s, m, pts); card.classList.remove('new-signal'); };
-        document.getElementById('radar-list').prepend(card);
+    async loadInitialData() {
+        const info = await fetch('https://api.binance.com/api/v3/exchangeInfo').then(r=>r.json());
+        this.pairs = info.symbols.filter(s=>s.quoteAsset==='USDT').map(s=>s.symbol);
+        this.startScanner();
     },
 
-    showTrade(s, m, pts) {
-        const d = pts[4].v;
-        document.getElementById('trade-panel').style.display = 'block';
-        document.getElementById('t-pair').innerText = s;
-        document.getElementById('t-model').innerText = m;
-        document.getElementById('t-model').style.color = `var(--${m})`;
-        document.getElementById('t-entry').innerText = d.toFixed(4);
-        document.getElementById('t-sl').innerText = (d * 0.985).toFixed(4);
-        document.getElementById('t-tp').innerText = (d * 1.04).toFixed(4);
-        this.drawPattern(pts, m);
-    },
-
-    drawPattern(pts, m) {
-        this.activeSeries.forEach(s => this.chart.removeSeries(s));
-        this.activeSeries = [];
-        const line = this.chart.addLineSeries({ color: `var(--${m})`, lineWidth: 2 });
-        line.setData(pts.map(p => ({ time: p.t, value: p.v })));
-        this.activeSeries.push(line);
-        this.candleSeries.setMarkers(pts.map((p, i) => ({ 
-            time: p.t, position: 'aboveBar', color: '#fff', text: ['X','A','B','C','D'][i] 
-        })));
-    },
-
-    loadPair(s) {
-        fetch(`https://api.binance.com/api/v3/klines?symbol=${s}&interval=${this.currentTF}&limit=120`)
-        .then(r => r.json()).then(k => {
-            this.candleSeries.setData(k.map(d => ({ 
-                time: d[0]/1000, open: +d[1], high: +d[2], low: +d[3], close: +d[4] 
-            })));
-            this.chart.timeScale().fitContent();
-        });
-    },
-
-    changeTF(tf, btn) {
-        this.currentTF = tf;
-        document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        this.signals.clear();
-        document.getElementById('radar-list').innerHTML = '';
-        this.loadPair('BTCUSDT');
-    },
-
-    filterRadar() {
-        const q = document.getElementById('search-input').value.toUpperCase();
-        document.querySelectorAll('.sig-card').forEach(c => {
-            c.style.display = c.id.replace('card-','').includes(q) ? 'flex' : 'none';
-        });
+    startScanner() {
+        let idx = 0;
+        const scan = async () => {
+            const batch = this.pairs.slice(idx, idx + 12);
+            await Promise.allSettled(batch.map(s => this.analyze(s)));
+            idx = (idx + 12) % this.pairs.length;
+            setTimeout(scan, 2500);
+        };
+        scan();
     }
 };
 
-// 4️⃣ تشغيل الـ init عند تحميل النافذة بالكامل
-window.addEventListener('load', () => Sniper.init());
+window.onload = () => Sniper.init();
 </script>
 </body>
 </html>
