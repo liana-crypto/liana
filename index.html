@@ -7,111 +7,75 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap');
-        
-        :root {
-            --nx-cyan: #00f7ff;
-            --nx-purple: #a855f7;
-            --nx-yellow: #eab308;
-            --nx-bg: #050505;
-        }
-
-        body {
-            background-color: var(--nx-bg);
-            color: #ffffff;
-            font-family: 'JetBrains+Mono', monospace;
-            overflow-x: hidden;
-            transition: box-shadow 0.3s ease;
-        }
-
-        .glass {
-            background: rgba(255, 255, 255, 0.015);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        /* أنيميشن الخلفية المتحركة (Cyber Grid) */
-        .grid-bg {
-            background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), 
-                              linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-            background-size: 40px 40px;
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
-        }
-
-        /* تأثير النبض الهجومي (Attack Pulse) */
-        @keyframes buy-pulse {
-            0% { box-shadow: inset 0 0 0px var(--nx-cyan); }
-            50% { box-shadow: inset 0 0 100px rgba(0, 247, 255, 0.15); border-color: var(--nx-cyan); }
-            100% { box-shadow: inset 0 0 0px var(--nx-cyan); }
-        }
-        @keyframes sell-pulse {
-            0% { box-shadow: inset 0 0 0px #ef4444; }
-            50% { box-shadow: inset 0 0 100px rgba(239, 68, 68, 0.15); border-color: #ef4444; }
-            100% { box-shadow: inset 0 0 0px #ef4444; }
-        }
+        :root { --nx-cyan: #00f7ff; --nx-purple: #a855f7; --nx-yellow: #eab308; --nx-bg: #050505; }
+        body { background-color: var(--nx-bg); color: #ffffff; font-family: 'JetBrains+Mono', monospace; overflow-x: hidden; }
+        .glass { background: rgba(255, 255, 255, 0.015); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .grid-bg { background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px); background-size: 40px 40px; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+        @keyframes buy-pulse { 0% { box-shadow: inset 0 0 0px var(--nx-cyan); } 50% { box-shadow: inset 0 0 100px rgba(0, 247, 255, 0.15); border-color: var(--nx-cyan); } 100% { box-shadow: inset 0 0 0px var(--nx-cyan); } }
+        @keyframes sell-pulse { 0% { box-shadow: inset 0 0 0px #ef4444; } 50% { box-shadow: inset 0 0 100px rgba(239, 68, 68, 0.15); border-color: #ef4444; } 100% { box-shadow: inset 0 0 0px #ef4444; } }
         .pulse-buy { animation: buy-pulse 0.8s ease-out; }
         .pulse-sell { animation: sell-pulse 0.8s ease-out; }
-
-        /* سكرول بار أنيق */
         ::-webkit-scrollbar { width: 3px; }
         ::-webkit-scrollbar-thumb { background: #222; border-radius: 10px; }
     </style>
 </head>
-<body class="min-h-screen border-[0.5px] border-white/5">
+<body class="min-h-screen">
     <div class="grid-bg"></div>
 
-    <header class="p-5 flex justify-between items-center glass sticky top-0 z-[100] border-b border-white/5">
+    <header class="p-4 flex justify-between items-center glass sticky top-0 z-[100] border-b border-white/5">
         <div class="flex items-center gap-4">
-            <div class="w-10 h-10 bg-cyan-500 rounded-xl flex items-center justify-center font-black text-black text-xl shadow-[0_0_20px_rgba(0,247,255,0.3)]">NV</div>
+            <div class="w-10 h-10 bg-cyan-500 rounded-xl flex items-center justify-center font-black text-black shadow-[0_0_20px_rgba(0,247,255,0.3)]">NV</div>
             <div>
-                <h1 class="text-lg font-black tracking-[0.4em] uppercase">NayroVex <span class="text-cyan-400">Elite</span></h1>
-                <p class="text-[7px] font-bold text-gray-500 tracking-[0.5em] uppercase">Liquidity & Dev-Activity Terminal</p>
+                <h1 class="text-md font-black tracking-[0.3em] uppercase">NayroVex <span class="text-cyan-400">Elite</span></h1>
+                <p class="text-[7px] font-bold text-gray-500 tracking-[0.3em] uppercase">V.1.0 // ASMA EDITION</p>
             </div>
         </div>
-        
-        <div class="flex gap-6">
-            <div class="text-right">
-                <div class="text-[8px] font-black text-gray-500 uppercase mb-1">Market Status</div>
-                <div class="flex items-center gap-2 text-[9px] font-bold text-green-400">
-                    <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> WS_CONNECTED
-                </div>
-            </div>
+        <div class="flex items-center gap-2 text-[9px] font-bold text-green-400">
+            <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> WS_LIVE
         </div>
     </header>
 
-    <main class="p-6 grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-[1800px] mx-auto">
+    <main class="p-4 max-w-[1900px] mx-auto space-y-6">
         
-        <section id="spot-container" class="space-y-6">
-            <div class="flex justify-between items-end border-b border-cyan-500/20 pb-3">
-                <h2 class="text-[11px] font-black text-cyan-400 tracking-[0.4em] uppercase italic">// 01. Spot_Leaders</h2>
-                <span class="text-[8px] font-bold text-gray-600 uppercase">1H Signal Hub</span>
-            </div>
-            <div id="spot-list" class="space-y-4">
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div class="glass rounded-2xl overflow-hidden h-[400px]">
+                <div class="p-3 border-b border-white/5 text-[9px] font-black uppercase tracking-widest text-gray-400 font-italic">// Market_Heatmap</div>
+                <div class="tradingview-widget-container" style="height: calc(100% - 40px);">
+                    <div class="tradingview-widget-container__widget"></div>
+                    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-crypto-coins-heatmap.js" async>
+                    { "dataSource": "Crypto", "blockSize": "market_cap_calc", "blockColor": "change", "locale": "en", "symbolUrl": "", "colorTheme": "dark", "hasTopBar": false, "isMainSeriesSymbol": false, "mapStyle": "standard", "textType": "market_cap_calc", "noTimeScale": true, "borderWidth": "1", "borderColor": "rgba(255, 255, 255, 0.05)" }
+                    </script>
                 </div>
+            </div>
+            <div class="glass rounded-2xl overflow-hidden h-[400px]">
+                <div class="p-3 border-b border-white/5 text-[9px] font-black uppercase tracking-widest text-gray-400 font-italic">// Live_Market_Stream</div>
+                <div id="tradingview_chart" style="height: calc(100% - 40px);"></div>
+                <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+                <script type="text/javascript">
+                new TradingView.widget({ "autosize": true, "symbol": "BINANCE:BTCUSDT", "interval": "15", "timezone": "Etc/UTC", "theme": "dark", "style": "1", "locale": "en", "toolbar_bg": "#f1f3f6", "enable_publishing": false, "hide_top_toolbar": true, "save_image": false, "container_id": "tradingview_chart" });
+                </script>
+            </div>
         </section>
 
-        <section id="alpha-container" class="space-y-6">
-            <div class="flex justify-between items-end border-b border-purple-500/20 pb-3">
-                <h2 class="text-[11px] font-black text-purple-500 tracking-[0.4em] uppercase italic">// 02. Alpha_Intensive</h2>
-                <span class="text-[8px] font-bold text-gray-600 uppercase">15M Momentum</span>
-            </div>
-            <div id="alpha-list" class="space-y-4">
-                </div>
-        </section>
-
-        <section id="projects-container" class="space-y-6">
-            <div class="flex justify-between items-end border-b border-yellow-500/20 pb-3">
-                <h2 class="text-[11px] font-black text-yellow-500 tracking-[0.4em] uppercase italic">// 03. Projects_Radar</h2>
-                <span class="text-[8px] font-bold text-gray-600 uppercase">Dev & Liquidity</span>
-            </div>
-            <div id="projects-list" class="space-y-4">
-                </div>
-        </section>
-
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <section class="space-y-4">
+                <h2 class="text-[10px] font-black text-cyan-400 tracking-[0.3em] uppercase italic border-b border-cyan-500/20 pb-2">// 01. Spot_Leaders</h2>
+                <div id="spot-list" class="space-y-3"></div>
+            </section>
+            <section class="space-y-4">
+                <h2 class="text-[10px] font-black text-purple-500 tracking-[0.3em] uppercase italic border-b border-purple-500/20 pb-2">// 02. Alpha_Intensive</h2>
+                <div id="alpha-list" class="space-y-3"></div>
+            </section>
+            <section class="space-y-4">
+                <h2 class="text-[10px] font-black text-yellow-500 tracking-[0.3em] uppercase italic border-b border-yellow-500/20 pb-2">// 03. Projects_Radar</h2>
+                <div id="projects-list" class="space-y-3"></div>
+            </section>
+        </div>
     </main>
 
-    <div id="alert-bar" class="fixed bottom-0 left-0 w-full p-2 glass border-t border-white/5 text-[8px] font-bold text-gray-500 flex justify-center gap-10">
+    <div id="alert-bar" class="fixed bottom-0 left-0 w-full p-2 glass border-t border-white/5 text-[8px] font-bold text-gray-500 flex justify-center gap-10 z-[200]">
         <span>© 2026 NAYROVEX X ASMA EDITION</span>
-        <span id="last-signal">WAITING FOR CORE SIGNAL...</span>
+        <span id="last-signal" class="tracking-widest italic uppercase">Syncing Core Engines...</span>
     </div>
 
     <script type="module">
@@ -119,27 +83,22 @@
         import { initAlphaIntensive } from './alpha_intensive.js';
         import { initProjectsRadar } from './projects_nx.js';
 
-        // نظام التنبيهات الصوتي والنبضي (Audio-Visual Alert System)
         window.triggerPulse = (type) => {
             const body = document.body;
             const signalText = document.getElementById('last-signal');
-            
             if (type === 'BUY') {
                 body.classList.add('pulse-buy');
-                signalText.innerHTML = `<span class="text-cyan-400 animate-pulse">🔥 STRONG BUY DETECTED</span>`;
+                signalText.innerHTML = `<span class="text-cyan-400 animate-pulse">🔥 CORE SIGNAL: STRONG BUY DETECTED</span>`;
                 setTimeout(() => body.classList.remove('pulse-buy'), 800);
             } else if (type === 'SELL') {
                 body.classList.add('pulse-sell');
-                signalText.innerHTML = `<span class="text-red-400 animate-pulse">⚠️ SELL PRESSURE DETECTED</span>`;
+                signalText.innerHTML = `<span class="text-red-400 animate-pulse">⚠️ CORE SIGNAL: SELL PRESSURE DETECTED</span>`;
                 setTimeout(() => body.classList.remove('pulse-sell'), 800);
             }
         };
 
-        // تهيئة النظام عند التحميل
         document.addEventListener('DOMContentLoaded', () => {
-            console.log("%c 💎 NAYROVEX TERMINAL INITIALIZED", "color: #00f7ff; font-weight: bold;");
-            
-            // تشغيل المحركات الثلاثة
+            console.log("%c 💎 NAYROVEX TERMINAL ONLINE", "color: #00f7ff; font-weight: bold;");
             initSpotCoinsAnalyzer();
             initAlphaIntensive();
             initProjectsRadar();
