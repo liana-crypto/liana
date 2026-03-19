@@ -1,59 +1,149 @@
-import ccxt
-import time
-
-# إعداد المنصة
-exchange = ccxt.binance()
-
-def calculate_smart_targets(current_price, high_24h, low_24h):
-    """
-    هذه الدالة تحاكي المنطق الذي ظهر في صورك لحساب الأهداف
-    """
-    # مثال لمنطق حساب الأهداف (يمكنك تعديله حسب استراتيجيتك)
-    entry_price = current_price
-    stop_loss = low_24h * 0.95  # وقف الخسارة تحت أدنى سعر بـ 5%
-    target_price = high_24h * 1.03 # الهدف فوق أعلى سعر بـ 3%
-    
-    return {
-        'entry': round(entry_price, 2),
-        'stop': round(stop_loss, 2),
-        'target': round(target_price, 2)
-    }
-
-def get_market_summary(symbol):
-    try:
-        # جلب بيانات السوق
-        ticker = exchange.fetch_ticker(symbol)
+<!DOCTYPE html>
+<html lang="ar" dir="ltr" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NayroVex Elite Terminal v1.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap');
         
-        current_price = ticker['last']
-        high_24h = ticker['high']
-        low_24h = ticker['low']
-        change = ticker['percentage']
-        volume = ticker['quoteVolume']
+        :root {
+            --nx-cyan: #00f7ff;
+            --nx-purple: #a855f7;
+            --nx-yellow: #eab308;
+            --nx-bg: #050505;
+        }
 
-        # حساب الأهداف
-        targets = calculate_smart_targets(current_price, high_24h, low_24h)
+        body {
+            background-color: var(--nx-bg);
+            color: #ffffff;
+            font-family: 'JetBrains+Mono', monospace;
+            overflow-x: hidden;
+            transition: box-shadow 0.3s ease;
+        }
 
-        # تنسيق المخرجات لتشبه الواجهة في الصور
-        print(f"\n--- {symbol} ---")
-        print(f"السعر الآن: {current_price}")
-        print(f"التغير: {change}%")
-        print(f"السيولة (24h): ${volume:,.0f}")
-        print(f"أعلى سعر: {high_24h} | أدنى سعر: {low_24h}")
-        print("-" * 20)
-        print(f"🎯 دخول: {targets['entry']}")
-        print(f"🛑 وقف: {targets['stop']}")
-        print(f"✅ هدف: {targets['target']}")
+        .glass {
+            background: rgba(255, 255, 255, 0.015);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* أنيميشن الخلفية المتحركة (Cyber Grid) */
+        .grid-bg {
+            background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), 
+                              linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+        }
+
+        /* تأثير النبض الهجومي (Attack Pulse) */
+        @keyframes buy-pulse {
+            0% { box-shadow: inset 0 0 0px var(--nx-cyan); }
+            50% { box-shadow: inset 0 0 100px rgba(0, 247, 255, 0.15); border-color: var(--nx-cyan); }
+            100% { box-shadow: inset 0 0 0px var(--nx-cyan); }
+        }
+        @keyframes sell-pulse {
+            0% { box-shadow: inset 0 0 0px #ef4444; }
+            50% { box-shadow: inset 0 0 100px rgba(239, 68, 68, 0.15); border-color: #ef4444; }
+            100% { box-shadow: inset 0 0 0px #ef4444; }
+        }
+        .pulse-buy { animation: buy-pulse 0.8s ease-out; }
+        .pulse-sell { animation: sell-pulse 0.8s ease-out; }
+
+        /* سكرول بار أنيق */
+        ::-webkit-scrollbar { width: 3px; }
+        ::-webkit-scrollbar-thumb { background: #222; border-radius: 10px; }
+    </style>
+</head>
+<body class="min-h-screen border-[0.5px] border-white/5">
+    <div class="grid-bg"></div>
+
+    <header class="p-5 flex justify-between items-center glass sticky top-0 z-[100] border-b border-white/5">
+        <div class="flex items-center gap-4">
+            <div class="w-10 h-10 bg-cyan-500 rounded-xl flex items-center justify-center font-black text-black text-xl shadow-[0_0_20px_rgba(0,247,255,0.3)]">NV</div>
+            <div>
+                <h1 class="text-lg font-black tracking-[0.4em] uppercase">NayroVex <span class="text-cyan-400">Elite</span></h1>
+                <p class="text-[7px] font-bold text-gray-500 tracking-[0.5em] uppercase">Liquidity & Dev-Activity Terminal</p>
+            </div>
+        </div>
         
-        # رصد الحيتان (مثال بسيط)
-        if volume > 100000000: # إذا تجاوزت السيولة 100 مليون
-            print("⚠️ رصد حيتان: دخول سيولة ضخمة الآن!")
+        <div class="flex gap-6">
+            <div class="text-right">
+                <div class="text-[8px] font-black text-gray-500 uppercase mb-1">Market Status</div>
+                <div class="flex items-center gap-2 text-[9px] font-bold text-green-400">
+                    <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> WS_CONNECTED
+                </div>
+            </div>
+        </div>
+    </header>
 
-    except Exception as e:
-        print(f"خطأ في جلب بيانات {symbol}: {e}")
+    <main class="p-6 grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-[1800px] mx-auto">
+        
+        <section id="spot-container" class="space-y-6">
+            <div class="flex justify-between items-end border-b border-cyan-500/20 pb-3">
+                <h2 class="text-[11px] font-black text-cyan-400 tracking-[0.4em] uppercase italic">// 01. Spot_Leaders</h2>
+                <span class="text-[8px] font-bold text-gray-600 uppercase">1H Signal Hub</span>
+            </div>
+            <div id="spot-list" class="space-y-4">
+                </div>
+        </section>
 
-# تجربة الكود على العملات التي في صورك
-symbols = ['ZEC/USDT', 'BNB/USDT', 'XRP/USDT', 'TAO/USDT']
+        <section id="alpha-container" class="space-y-6">
+            <div class="flex justify-between items-end border-b border-purple-500/20 pb-3">
+                <h2 class="text-[11px] font-black text-purple-500 tracking-[0.4em] uppercase italic">// 02. Alpha_Intensive</h2>
+                <span class="text-[8px] font-bold text-gray-600 uppercase">15M Momentum</span>
+            </div>
+            <div id="alpha-list" class="space-y-4">
+                </div>
+        </section>
 
-for sym in symbols:
-    get_market_summary(sym)
-    time.sleep(1) # لتجنب الحظر من API
+        <section id="projects-container" class="space-y-6">
+            <div class="flex justify-between items-end border-b border-yellow-500/20 pb-3">
+                <h2 class="text-[11px] font-black text-yellow-500 tracking-[0.4em] uppercase italic">// 03. Projects_Radar</h2>
+                <span class="text-[8px] font-bold text-gray-600 uppercase">Dev & Liquidity</span>
+            </div>
+            <div id="projects-list" class="space-y-4">
+                </div>
+        </section>
+
+    </main>
+
+    <div id="alert-bar" class="fixed bottom-0 left-0 w-full p-2 glass border-t border-white/5 text-[8px] font-bold text-gray-500 flex justify-center gap-10">
+        <span>© 2026 NAYROVEX X ASMA EDITION</span>
+        <span id="last-signal">WAITING FOR CORE SIGNAL...</span>
+    </div>
+
+    <script type="module">
+        import { initSpotCoinsAnalyzer } from './spot_analyst.js';
+        import { initAlphaIntensive } from './alpha_intensive.js';
+        import { initProjectsRadar } from './projects_nx.js';
+
+        // نظام التنبيهات الصوتي والنبضي (Audio-Visual Alert System)
+        window.triggerPulse = (type) => {
+            const body = document.body;
+            const signalText = document.getElementById('last-signal');
+            
+            if (type === 'BUY') {
+                body.classList.add('pulse-buy');
+                signalText.innerHTML = `<span class="text-cyan-400 animate-pulse">🔥 STRONG BUY DETECTED</span>`;
+                setTimeout(() => body.classList.remove('pulse-buy'), 800);
+            } else if (type === 'SELL') {
+                body.classList.add('pulse-sell');
+                signalText.innerHTML = `<span class="text-red-400 animate-pulse">⚠️ SELL PRESSURE DETECTED</span>`;
+                setTimeout(() => body.classList.remove('pulse-sell'), 800);
+            }
+        };
+
+        // تهيئة النظام عند التحميل
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("%c 💎 NAYROVEX TERMINAL INITIALIZED", "color: #00f7ff; font-weight: bold;");
+            
+            // تشغيل المحركات الثلاثة
+            initSpotCoinsAnalyzer();
+            initAlphaIntensive();
+            initProjectsRadar();
+        });
+    </script>
+</body>
+</html>
