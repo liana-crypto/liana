@@ -1,39 +1,60 @@
 /**
- * NayroVex Spot Analyst v1.2 (GitHub Pages Edition)
+ * NayroVex Spot Analyst - Fixed Edition for GitHub Pages
  */
 
-import { detectFVG } from './liquidity.js';
-import { calculateProbability } from './predictor.js';
+const SPOT_WATCHLIST = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT'];
 
-const SPOT_WATCHLIST = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT', 'ADAUSDT', 'AVAXUSDT'];
-
-export const initSpotAnalyst = () => {
+export const initSpotCoinsAnalyzer = async () => {
     const container = document.querySelector('#spot-list');
     if (!container) return;
 
-    console.log("%c 🏦 NX-SPOT: Core Market Analyzer Active (allOrigins)", "color: #00ff88; font-weight: bold;");
+    console.log("Starting Spot Core...");
 
-    // تحديث كل 15 ثانية لمراعاة سرعة البروكسي المجاني
-    setInterval(async () => {
-        const promises = SPOT_WATCHLIST.map(async (symbol) => {
+    const fetchData = async () => {
+        for (const symbol of SPOT_WATCHLIST) {
             try {
-                // 🛠️ استخدام البروكسي لفك حظر CORS
-                const binanceUrl = encodeURIComponent(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=1h&limit=20`);
-                const res = await fetch(`https://api.allorigins.win/get?url=${binanceUrl}`);
-                
-                // جلب البيانات من الـ Wrapper الخاص بالبروكسي
-                const proxyData = await res.json();
-                const klines = JSON.parse(proxyData.contents); // البيانات الحقيقية من بينانس
-                
-                updateSpotDashboardUI(symbol, klines);
-            } catch (err) { console.error(`Spot Analyzer Error [${symbol}]:`, err); }
-        });
-        await Promise.all(promises);
-    }, 15000);
+                // استخدام AllOrigins لتجاوز حظر CORS
+                const targetUrl = encodeURIComponent(`https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}`);
+                const response = await fetch(`https://api.allorigins.win/get?url=${targetUrl}`);
+                const json = await response.json();
+                const data = JSON.parse(json.contents);
+
+                renderCard(symbol, data, container);
+            } catch (e) {
+                console.error("Fetch Error:", e);
+            }
+        }
+    };
+
+    fetchData();
+    setInterval(fetchData, 30000); // تحديث كل 30 ثانية
 };
 
-const updateSpotDashboardUI = (symbol, klines) => {
-    // ... (هذا الجزء لم يتغير، يبقى كما هو لعرض الواجهة)
-};
+const renderCard = (symbol, data, container) => {
+    let card = document.getElementById(`spot-${symbol}`);
+    if (!card) {
+        card = document.createElement('div');
+        card.id = `spot-${symbol}`;
+        card.className = "glass p-4 rounded-2xl border border-white/5 mb-3 transition-all hover:border-cyan-500/30";
+        container.appendChild(card);
+    }
 
-// ... (دالة calculateStandardRSI تبقى كما هي)
+    const price = parseFloat(data.lastPrice).toLocaleString();
+    const change = parseFloat(data.priceChangePercent).toFixed(2);
+    const isUp = change >= 0;
+
+    card.innerHTML = `
+        <div class="flex justify-between items-center">
+            <div>
+                <h3 class="text-[10px] font-black text-white">${symbol}</h3>
+                <p class="text-[8px] text-gray-500">Vol: ${(parseFloat(data.quoteVolume)/1000000).toFixed(2)}M</p>
+            </div>
+            <div class="text-right">
+                <div class="text-[10px] font-mono font-bold text-white">$${price}</div>
+                <div class="text-[8px] font-black ${isUp ? 'text-green-400' : 'text-red-400'}">
+                    ${isUp ? '↗' : '↘'} ${change}%
+                </div>
+            </div>
+        </div>
+    `;
+};
