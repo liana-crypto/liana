@@ -1,108 +1,149 @@
 <!DOCTYPE html>
-<html lang="ar" dir="ltr" class="dark">
+<html lang="ar" dir="rtl" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NayroVex Elite Terminal v1.0</title>
+    <title>NayroVex Elite v8.1 | Multi-TF Beast</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap');
-        :root { --nx-cyan: #00f7ff; --nx-purple: #a855f7; --nx-yellow: #eab308; --nx-bg: #050505; }
+        :root { --nx-cyan: #00f7ff; --nx-purple: #a855f7; --nx-bg: #030303; }
         body { background-color: var(--nx-bg); color: #ffffff; font-family: 'JetBrains+Mono', monospace; overflow-x: hidden; }
-        .glass { background: rgba(255, 255, 255, 0.015); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
-        .grid-bg { background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px); background-size: 40px 40px; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
-        @keyframes buy-pulse { 0% { box-shadow: inset 0 0 0px var(--nx-cyan); } 50% { box-shadow: inset 0 0 100px rgba(0, 247, 255, 0.15); border-color: var(--nx-cyan); } 100% { box-shadow: inset 0 0 0px var(--nx-cyan); } }
-        @keyframes sell-pulse { 0% { box-shadow: inset 0 0 0px #ef4444; } 50% { box-shadow: inset 0 0 100px rgba(239, 68, 68, 0.15); border-color: #ef4444; } 100% { box-shadow: inset 0 0 0px #ef4444; } }
-        .pulse-buy { animation: buy-pulse 0.8s ease-out; }
-        .pulse-sell { animation: sell-pulse 0.8s ease-out; }
-        ::-webkit-scrollbar { width: 3px; }
-        ::-webkit-scrollbar-thumb { background: #222; border-radius: 10px; }
+        .glass { background: rgba(255, 255, 255, 0.01); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.05); transition: 0.4s; }
+        .glass:hover { border-color: var(--nx-cyan); box-shadow: 0 0 30px rgba(0, 247, 255, 0.1); }
+        .signal-card { border-right: 4px solid var(--nx-cyan); animation: slide-in 0.6s cubic-bezier(0.23, 1, 0.32, 1); }
+        @keyframes slide-in { from { opacity: 0; transform: scale(0.9) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .grid-bg { background-image: radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 30px 30px; position: fixed; inset: 0; z-index: -1; }
+        .tf-tag { font-[7px] px-2 py-0.5 rounded bg-white/5 border border-white/10 text-gray-400; }
     </style>
 </head>
-<body class="min-h-screen">
+<body class="min-h-screen pb-20">
     <div class="grid-bg"></div>
 
-    <header class="p-4 flex justify-between items-center glass sticky top-0 z-[100] border-b border-white/5">
+    <header class="p-4 flex justify-between items-center glass sticky top-0 z-[100] border-b border-white/10">
         <div class="flex items-center gap-4">
-            <div class="w-10 h-10 bg-cyan-500 rounded-xl flex items-center justify-center font-black text-black shadow-[0_0_20px_rgba(0,247,255,0.3)]">NV</div>
+            <div class="w-12 h-12 bg-gradient-to-br from-cyan-500 to-purple-600 rounded-2xl flex items-center justify-center font-black text-black shadow-lg">NV</div>
             <div>
-                <h1 class="text-md font-black tracking-[0.3em] uppercase">NayroVex <span class="text-cyan-400">Elite</span></h1>
-                <p class="text-[7px] font-bold text-gray-500 tracking-[0.3em] uppercase">V.1.0 // ASMA EDITION</p>
+                <h1 class="text-md font-black tracking-[0.4em] uppercase">NayroVex <span class="text-cyan-400">v8.1</span></h1>
+                <p class="text-[7px] font-bold text-gray-500 tracking-[0.2em]">ULTIMATE MULTI-TIMEFRAME ENGINE</p>
             </div>
         </div>
-        <div class="flex items-center gap-2 text-[9px] font-bold text-green-400">
-            <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> WS_LIVE
-        </div>
+        <button onclick="requestNotify()" id="notif-btn" class="text-[9px] font-black bg-white/5 border border-white/10 px-4 py-2 rounded-full hover:bg-cyan-500 hover:text-black transition-all">ENABLE NOTIFICATIONS 🔔</button>
     </header>
 
-    <main class="p-4 max-w-[1900px] mx-auto space-y-6">
+    <main class="p-6 max-w-[1900px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div class="glass rounded-2xl overflow-hidden h-[400px]">
-                <div class="p-3 border-b border-white/5 text-[9px] font-black uppercase tracking-widest text-gray-400 font-italic">// Market_Heatmap</div>
-                <div class="tradingview-widget-container" style="height: calc(100% - 40px);">
-                    <div class="tradingview-widget-container__widget"></div>
-                    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-crypto-coins-heatmap.js" async>
-                    { "dataSource": "Crypto", "blockSize": "market_cap_calc", "blockColor": "change", "locale": "en", "symbolUrl": "", "colorTheme": "dark", "hasTopBar": false, "isMainSeriesSymbol": false, "mapStyle": "standard", "textType": "market_cap_calc", "noTimeScale": true, "borderWidth": "1", "borderColor": "rgba(255, 255, 255, 0.05)" }
-                    </script>
-                </div>
-            </div>
-            <div class="glass rounded-2xl overflow-hidden h-[400px]">
-                <div class="p-3 border-b border-white/5 text-[9px] font-black uppercase tracking-widest text-gray-400 font-italic">// Live_Market_Stream</div>
-                <div id="tradingview_chart" style="height: calc(100% - 40px);"></div>
-                <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
-                <script type="text/javascript">
-                new TradingView.widget({ "autosize": true, "symbol": "BINANCE:BTCUSDT", "interval": "15", "timezone": "Etc/UTC", "theme": "dark", "style": "1", "locale": "en", "toolbar_bg": "#f1f3f6", "enable_publishing": false, "hide_top_toolbar": true, "save_image": false, "container_id": "tradingview_chart" });
-                </script>
+        <section class="lg:col-span-4 space-y-4">
+            <h2 class="text-[9px] font-black text-cyan-400 tracking-[0.5em] uppercase italic">// 01. Multi_TF_Scanner</h2>
+            <div id="beast-signals" class="glass rounded-[2.5rem] p-5 h-[750px] overflow-y-auto space-y-4">
+                <div class="text-center py-32 text-gray-600 italic text-[10px] tracking-[0.3em]">SYNCHRONIZING TIMEFRAMES... 🛰️</div>
             </div>
         </section>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <section class="space-y-4">
-                <h2 class="text-[10px] font-black text-cyan-400 tracking-[0.3em] uppercase italic border-b border-cyan-500/20 pb-2">// 01. Spot_Leaders</h2>
-                <div id="spot-list" class="space-y-3"></div>
-            </section>
-            <section class="space-y-4">
-                <h2 class="text-[10px] font-black text-purple-500 tracking-[0.3em] uppercase italic border-b border-purple-500/20 pb-2">// 02. Alpha_Intensive</h2>
-                <div id="alpha-list" class="space-y-3"></div>
-            </section>
-            <section class="space-y-4">
-                <h2 class="text-[10px] font-black text-yellow-500 tracking-[0.3em] uppercase italic border-b border-yellow-500/20 pb-2">// 03. Projects_Radar</h2>
-                <div id="projects-list" class="space-y-3"></div>
-            </section>
-        </div>
+        <section class="lg:col-span-8 space-y-4">
+            <h2 class="text-[9px] font-black text-purple-500 tracking-[0.5em] uppercase italic">// 02. Neural_Market_Analysis</h2>
+            <div class="glass rounded-[2.5rem] overflow-hidden h-[750px]">
+                <div id="tradingview_full" class="h-full"></div>
+            </div>
+        </section>
     </main>
 
-    <div id="alert-bar" class="fixed bottom-0 left-0 w-full p-2 glass border-t border-white/5 text-[8px] font-bold text-gray-500 flex justify-center gap-10 z-[200]">
-        <span>© 2026 NAYROVEX X ASMA EDITION</span>
-        <span id="last-signal" class="tracking-widest italic uppercase">Syncing Core Engines...</span>
-    </div>
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <script>
+        new TradingView.widget({ "autosize": true, "symbol": "BINANCE:BTCUSDT", "interval": "15", "theme": "dark", "container_id": "tradingview_full", "style": "1", "locale": "ar", "hide_side_toolbar": false });
 
-    <script type="module">
-        import { initSpotCoinsAnalyzer } from './spot_analyst.js';
-        import { initAlphaIntensive } from './alpha_intensive.js';
-        import { initProjectsRadar } from './projects_nx.js';
+        const signalsBox = document.getElementById('beast-signals');
 
-        window.triggerPulse = (type) => {
-            const body = document.body;
-            const signalText = document.getElementById('last-signal');
-            if (type === 'BUY') {
-                body.classList.add('pulse-buy');
-                signalText.innerHTML = `<span class="text-cyan-400 animate-pulse">🔥 CORE SIGNAL: STRONG BUY DETECTED</span>`;
-                setTimeout(() => body.classList.remove('pulse-buy'), 800);
-            } else if (type === 'SELL') {
-                body.classList.add('pulse-sell');
-                signalText.innerHTML = `<span class="text-red-400 animate-pulse">⚠️ CORE SIGNAL: SELL PRESSURE DETECTED</span>`;
-                setTimeout(() => body.classList.remove('pulse-sell'), 800);
+        // Request Browser Notification Permission
+        function requestNotify() {
+            Notification.requestPermission().then(p => {
+                if(p === 'granted') document.getElementById('notif-btn').innerText = "NOTIFICATIONS ACTIVE ✅";
+            });
+        }
+
+        // --- Math Core ---
+        function calculateRSI(closes, period = 14) {
+            if (closes.length < period) return 50;
+            let gains = 0, losses = 0;
+            for (let i = 1; i <= period; i++) {
+                let d = closes[i] - closes[i - 1];
+                d >= 0 ? gains += d : losses -= d;
             }
-        };
+            let avgG = gains / period, avgL = losses / period;
+            for (let i = period + 1; i < closes.length; i++) {
+                let d = closes[i] - closes[i - 1];
+                avgG = (avgG * (period - 1) + (d > 0 ? d : 0)) / period;
+                avgL = (avgL * (period - 1) + (d < 0 ? -d : 0)) / period;
+            }
+            return 100 - (100 / (1 + avgG / avgL));
+        }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log("%c 💎 NAYROVEX TERMINAL ONLINE", "color: #00f7ff; font-weight: bold;");
-            initSpotCoinsAnalyzer();
-            initAlphaIntensive();
-            initProjectsRadar();
-        });
+        function calculateEMA(prices, period) {
+            const k = 2 / (period + 1);
+            let ema = prices[0];
+            for (let i = 1; i < prices.length; i++) ema = (prices[i] * k) + (ema * (1 - k));
+            return ema;
+        }
+
+        // --- Data & Logic Engine ---
+        async function fetchTFData(symbol, interval) {
+            const r = await fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=100`);
+            const d = await r.json();
+            return d.map(k => parseFloat(k[4]));
+        }
+
+        async function runUltimateEngine() {
+            const symbols = ["BTCUSDT", "ETHUSDT", "SOLUSDT"];
+            for (const sym of symbols) {
+                const [c5m, c15m, c1h] = await Promise.all([
+                    fetchTFData(sym, '5m'), fetchTFData(sym, '15m'), fetchTFData(sym, '1h')
+                ]);
+
+                const rsi5 = calculateRSI(c5m), rsi15 = calculateRSI(c15m), rsi1h = calculateRSI(c1h);
+                const ema20 = calculateEMA(c15m, 20), ema50 = calculateEMA(c15m, 50);
+                const price = c15m[c15m.length - 1];
+
+                // 🔥 ULTIMATE STRATEGY: 3-TF RSI Sync + EMA Cross Confirmation
+                let signal = null;
+                if (rsi5 < 35 && rsi15 < 40 && price > ema20) {
+                    signal = { type: 'ULTRA BUY ⚡', color: 'text-cyan-400', bg: 'bg-cyan-500/5', desc: 'Triple RSI Oversold + Bullish EMA Support' };
+                } else if (rsi5 > 65 && rsi15 > 60 && price < ema20) {
+                    signal = { type: 'ULTRA SELL ⚠️', color: 'text-red-500', bg: 'bg-red-500/5', desc: 'Triple RSI Overbought + Bearish EMA Resistance' };
+                }
+
+                if (signal) createUltimateUI(sym, signal, rsi5, rsi15, rsi1h, price);
+            }
+        }
+
+        function createUltimateUI(sym, sig, r5, r15, r1h, price) {
+            if ([...signalsBox.children].some(el => el.innerText.includes(sym))) return;
+            if (signalsBox.innerText.includes("SYNCHRONIZING")) signalsBox.innerHTML = '';
+
+            const el = document.createElement('div');
+            el.className = `glass p-6 rounded-[2.5rem] signal-card ${sig.bg} border-white/5`;
+            el.innerHTML = `
+                <div class="flex justify-between items-center mb-3">
+                    <span class="text-[10px] font-black tracking-widest">${sym}</span>
+                    <div class="flex gap-1">
+                        <span class="tf-tag">5M: ${r5.toFixed(0)}</span>
+                        <span class="tf-tag">15M: ${r15.toFixed(0)}</span>
+                        <span class="tf-tag">1H: ${r1h.toFixed(0)}</span>
+                    </div>
+                </div>
+                <div class="text-2xl font-black italic mb-2 ${sig.color}">${sig.type}</div>
+                <p class="text-[9px] text-gray-400 font-bold border-t border-white/5 pt-4">
+                    <span class="text-purple-400 tracking-[0.2em] uppercase">Reason:</span> ${sig.desc}<br>
+                    <span class="opacity-50 mt-1 block tracking-tighter uppercase font-black">Target Entry: $${price.toLocaleString()}</span>
+                </p>
+            `;
+            signalsBox.prepend(el);
+            if (Notification.permission === 'granted') {
+                new Notification(`NayroVex Alert: ${sym}`, { body: `${sig.type} at ${price}` });
+            }
+        }
+
+        setInterval(runUltimateEngine, 20000);
+        runUltimateEngine();
     </script>
 </body>
 </html>
